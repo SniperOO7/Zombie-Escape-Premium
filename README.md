@@ -18,6 +18,14 @@
     - VIP Flag: a (reservation)
     - Admin flag: b (ban)
     - Leader flag: o (custom_1)
+    
+    - Commands:
+    - /leader [COLOR="red"][LEADER MENU][/COLOR]
+    - /zr, /menu, /ze, /zm [COLOR="Red"][MAIN MENU][/COLOR]
+    - /respawn, /r [RESPAWN DURING FIRST INFECTION TIME]
+    - /guns, /weapons, /gun, /get [WEAPONS MENU]
+    - /zclass, /class, /human [ZOMBIE/HUMAN CLASSES]
+    - /za, /zea, /zadmin [ADMIN MENU]
 
 ![ddisp](https://i.imgur.com/Y3vGONO.png)
 * **My steam profile: https://steamcommunity.com/id/Sniper-oo7/?**
