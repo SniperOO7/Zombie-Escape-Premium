@@ -17,6 +17,16 @@ public int Native_IsInfected(Handle plugin, int argc)
 	return true;
 }
 
+public int Native_IsHuman(Handle plugin, int argc)
+{
+	int client = GetNativeCell(1);
+	if (!g_bInfected[client])
+	{
+		return true;
+	}
+	return false;
+}
+
 public int Native_IsNemesis(Handle plugin, int argc)
 {
 	int client = GetNativeCell(1);

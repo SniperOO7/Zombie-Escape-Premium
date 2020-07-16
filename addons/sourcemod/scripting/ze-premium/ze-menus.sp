@@ -732,16 +732,24 @@ public int mZeAdminHandler(Menu menu, MenuAction action, int client, int index)
 				}
 				else if (StrEqual(szItem, "menu2"))
 				{
-					if(g_bPause == false)
+					if(i_Infection > 0)
 					{
-						g_bPause = true;
-						PrintToChatAll(" \x04[ZE-Admin]\x01 Admin\x06 %N\x01 paused infection timer!");
-						openAdmin(client);
+						if(g_bPause == false)
+						{
+							g_bPause = true;
+							PrintToChatAll(" \x04[ZE-Admin]\x01 Admin\x06 %N\x01 paused infection timer!", client);
+							openAdmin(client);
+						}
+						else
+						{
+							g_bPause = false;
+							PrintToChatAll(" \x04[ZE-Admin]\x01 Admin\x06 %N\x01 unpased infection timer!", client);
+							openAdmin(client);
+						}
 					}
 					else
 					{
-						g_bPause = false;
-						PrintToChatAll(" \x04[ZE-Admin]\x01 Admin\x06 %N\x01 unpased infection timer!");
+						ReplyToCommand(client, " \x04[ZE-Admin]\x01 Infection timer expired, wait for next round!");
 						openAdmin(client);
 					}
 				}
