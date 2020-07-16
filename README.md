@@ -21,8 +21,8 @@
     - Leader flag: o (custom_1)
     
 * **Commands:**
-    - /leader [LEADER MENU][/COLOR]
-    - /zr, /menu, /ze, /zm [MAIN MENU][/COLOR]
+    - /leader [LEADER MENU][
+    - /zr, /menu, /ze, /zm [MAIN MENU]
     - /respawn, /r [RESPAWN DURING FIRST INFECTION TIME]
     - /guns, /weapons, /gun, /get [WEAPONS MENU]
     - /zclass, /class, /human [ZOMBIE/HUMAN CLASSES]
