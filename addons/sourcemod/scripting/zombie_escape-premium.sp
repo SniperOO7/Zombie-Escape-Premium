@@ -98,9 +98,10 @@ public void OnPluginStart()
 public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
 {
 	// Natives
-	CreateNative("ZEPremium_IsInfection", Native_StartingInfection);
-	CreateNative("ZEPremium_IsInfected", Native_IsInfected);
-	CreateNative("ZEPremium_IsNemesis", Native_IsNemesis);
+	CreateNative("ZR_IsInfection", Native_StartingInfection);
+	CreateNative("ZR_IsClientZombie", Native_IsInfected);
+	CreateNative("ZR_IsClientHuman", Native_IsHuman);
+	CreateNative("ZR_IsNemesis", Native_IsNemesis);
 	
 	RegPluginLibrary("zepremium");
 	
