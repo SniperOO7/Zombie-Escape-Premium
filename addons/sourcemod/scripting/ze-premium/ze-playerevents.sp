@@ -42,6 +42,10 @@ public void OnPlayerDeath(Handle event, char[] name, bool dontBroadcast)
 			g_bInfected[client] = true;
 			CS_SwitchTeam(client, CS_TEAM_T);
 			CreateTimer(1.0, Respawn, client);
+			if(GetTeamClientCount(3) <= 0)
+			{
+				CS_TerminateRound(5.0, CSRoundEnd_TerroristWin, true);
+			}
 		}
 		else
 		{
