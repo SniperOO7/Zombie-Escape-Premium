@@ -18,3 +18,11 @@ native bool ZEPremium_IsInfection();
  * @return        True if is player infected
  */
 native bool ZEPremium_IsInfected(int client);
+
+/**
+ * Check if is player nemesis or not
+ *
+ * @param client
+ * @return        True if is player nemesis
+ */
+native bool ZEPremium_IsNemesis(int client);
