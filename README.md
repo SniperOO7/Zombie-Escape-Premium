@@ -11,6 +11,7 @@
     - Leader menu (beacon, sprites..)
     - Zombie/Human models
     - Zombie/Human classes 
+    - Nemesis feature
     - VIP features
     - New and old sounds
     - Weapon menu
