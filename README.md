@@ -14,6 +14,7 @@
     - VIP features
     - New and old sounds
     - Weapon menu
+    - Flash (= freeze grenade), He (= fire grenade)
     - VIP Flag: a (reservation)
     - Admin flag: b (ban)
     - Leader flag: o (custom_1)
