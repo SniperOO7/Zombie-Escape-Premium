@@ -9,7 +9,7 @@
  * @param client
  * @return        True if infection not yet started 
  */
-native bool ZEPremium_IsInfection();
+native bool ZR_IsInfection();
 
 /**
  * Check if is player infected or not
@@ -17,7 +17,15 @@ native bool ZEPremium_IsInfection();
  * @param client
  * @return        True if is player infected
  */
-native bool ZEPremium_IsInfected(int client);
+native bool ZR_IsClientZombie(int client);
+
+/**
+ * Check if is player human
+ *
+ * @param client
+ * @return        True if is player human
+ */
+native bool ZR_IsClientHuman(int client);
 
 /**
  * Check if is player nemesis or not
@@ -25,4 +33,4 @@ native bool ZEPremium_IsInfected(int client);
  * @param client
  * @return        True if is player nemesis
  */
-native bool ZEPremium_IsNemesis(int client);
+native bool ZR_IsNemesis(int client);
