@@ -29,4 +29,5 @@
     - /za, /zea, /zadmin [ADMIN MENU]
 
 ![ddisp](https://i.imgur.com/Y3vGONO.png)
-* **My steam profile: https://steamcommunity.com/id/Sniper-oo7/?**
+* **My steam profile: https://steamcommunity.com/id/Sniper-oo7/**
+* **If you want private job contact me on STEAM**
