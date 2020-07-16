@@ -1,5 +1,5 @@
 ![ddisp](https://i.imgur.com/02IiCZ1.png)
-* **AlliedModders version: https://forums.alliedmods.net/showthread.php?t=324458**
+* **AlliedModders version: https://forums.alliedmods.net/showthread.php?t=326056**
 
 ![ddisp](https://i.imgur.com/WWKtEuh.png)
 * **What zombie escape have ?**
