@@ -1,6 +1,7 @@
 public Action FirstInfection(Handle timer)
 {
-	if(g_bPause == false)
+	int numberofplayers = GetTeamClientCount(2) + GetTeamClientCount(3);
+	if(g_bPause == false && numberofplayers > 0)
 	{
 		i_Infection--;
 	}

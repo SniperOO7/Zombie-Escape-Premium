@@ -980,6 +980,7 @@ public int mRoundBanHandler(Menu menu, MenuAction action, int client, int index)
 					{
 						PrintToChatAll(" \x04[ZE-Admin]\x01 Player \x04%N\x01 was swaped to \x07ZOMBIES\x01 by \x06%N\x01 admin!", user, client);
 						CS_SwitchTeam(user, CS_TEAM_T);
+						g_bInfected[user] = true;
 						SetEntityModel(user, ZOMBIEMODEL);
 						SetEntityHealth(user, g_cZEZombieHP.IntValue);
 						SetEntPropFloat(user, Prop_Data, "m_flLaggedMovementValue", g_cZEZombieSpeed.FloatValue);
@@ -988,6 +989,7 @@ public int mRoundBanHandler(Menu menu, MenuAction action, int client, int index)
 					{
 						PrintToChatAll(" \x04[ZE-Admin]\x01 Player \x04%N\x01 was swaped to \x0BHUMANS\x01 by \x06%N\x01 admin!", user, client);
 						CS_SwitchTeam(user, CS_TEAM_CT);
+						g_bInfected[user] = false;
 						SetEntityModel(user, HUMANMODEL);
 						SetEntityHealth(user, g_cZEHumanHP.IntValue);
 						SetEntPropFloat(user, Prop_Data, "m_flLaggedMovementValue", 1.0);
