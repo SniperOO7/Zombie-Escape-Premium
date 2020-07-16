@@ -3,7 +3,7 @@
 #define DEBUG
 
 #define PLUGIN_AUTHOR "Sniper007"
-#define PLUGIN_VERSION "1.00"
+#define PLUGIN_VERSION "2.00"
 
 #include <sourcemod>
 #include <sdktools>
@@ -55,6 +55,11 @@ public void OnPluginStart()
 	
 	RegConsoleCmd("sm_leader", CMD_Leader);
 	
+	RegConsoleCmd("sm_za", CMD_Admin);
+	RegConsoleCmd("sm_zea", CMD_Admin);
+	RegConsoleCmd("sm_zadmin", CMD_Admin);
+	RegConsoleCmd("sm_zeadmin", CMD_Admin);
+	
 	HookEvent("round_start", Event_RoundStart);
 	HookEvent("player_death", OnPlayerDeath);
 	HookEvent("round_end", OnRoundEnd);
@@ -68,6 +73,12 @@ public void OnPluginStart()
 	g_cZEDefendModelVtf = CreateConVar("sm_ze_defend_leader_material_vtf", "materials/ze_premium/defendhere.vtf", "Model for defend material sprite/marker (VTF)");
 	g_cZEFollowmeModelVmt = CreateConVar("sm_ze_followme_leader_material_vmt", "materials/ze_premium/followme.vmt", "Model for followme material sprite (VMT)");
 	g_cZEFollowmeModelVtf = CreateConVar("sm_ze_followme_leader_material_vtf", "materials/ze_premium/followme.vtf", "Model for followme material sprite (VTF)");
+	
+	g_cZENemesis = CreateConVar("sm_ze_nemesis", "10", "How much chance in percent to first zombie will be nemesis, 0 = disabled");
+	g_cZENemesisModel = CreateConVar("sm_ze_nemesis_model", "models/player/custom_player/owston/re3/nemesis/nemesis_remake1.mdl", "Model of Nemesis");
+	g_cZENemesisHP = CreateConVar("sm_ze_nemesis_hp", "30000", "Amout of nemesis HP");
+	g_cZENemesisSpeed = CreateConVar("sm_ze_nemesis_speed", "1.7", "Amout of nemesis speed");
+	g_cZENemesisGravity = CreateConVar("sm_ze_nemesis_gravity", "0.7", "Amout of nemesis gravity");
 	
 	g_cZEFirstInfection = CreateConVar("sm_ze_infection", "30", "Time to first infection");
 	g_cZEZombieHP = CreateConVar("sm_ze_zombiehp", "10000", "Amout of zombie HP");
@@ -89,6 +100,7 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 	// Natives
 	CreateNative("ZEPremium_IsInfection", Native_StartingInfection);
 	CreateNative("ZEPremium_IsInfected", Native_IsInfected);
+	CreateNative("ZEPremium_IsNemesis", Native_IsNemesis);
 	
 	RegPluginLibrary("zepremium");
 	
@@ -111,12 +123,14 @@ public void OnMapStart()
 	//MODELS
 	g_cZEHumanModel.GetString(HUMANMODEL, sizeof(HUMANMODEL));
 	g_cZEZombieModel.GetString(ZOMBIEMODEL, sizeof(ZOMBIEMODEL));
+	g_cZENemesisModel.GetString(NEMESISMODEL, sizeof(NEMESISMODEL));
 	g_cZEDefendModelVmt.GetString(DEFEND, sizeof(DEFEND));
 	g_cZEDefendModelVtf.GetString(DEFENDVTF, sizeof(DEFENDVTF));
 	g_cZEFollowmeModelVmt.GetString(FOLLOWME, sizeof(FOLLOWME));
 	g_cZEFollowmeModelVtf.GetString(FOLLOWMEVTF, sizeof(FOLLOWMEVTF));
 	
 	PrecacheModel(HUMANMODEL);
+	PrecacheModel(NEMESISMODEL);
 	PrecacheModel(ZOMBIEMODEL);
 	
 	//DECALS
@@ -150,6 +164,7 @@ public void OnMapStart()
 	AddFileToDownloadsTable("sound/ze_premium/ze-pain5.mp3");
 	AddFileToDownloadsTable("sound/ze_premium/ze-pain6.mp3");
 	AddFileToDownloadsTable("sound/ze_premium/ze-respawn.mp3");
+	AddFileToDownloadsTable("sound/ze_premium/ze-nemesis.mp3");
 	
 	AddFileToDownloadsTable("sound/ze_premium/10.mp3");
 	AddFileToDownloadsTable("sound/ze_premium/9.mp3");
@@ -181,6 +196,7 @@ public void OnMapStart()
 	PrecacheSound("ze_premium/ze-pain5.mp3");
 	PrecacheSound("ze_premium/ze-pain6.mp3");
 	PrecacheSound("ze_premium/ze-respawn.mp3");
+	PrecacheSound("ze_premium/ze-nemesis.mp3");
 	
 	PrecacheSound("ze_premium/10.mp3");
 	PrecacheSound("ze_premium/9.mp3");
@@ -198,6 +214,7 @@ public void OnMapStart()
 	g_iHaloSprite = PrecacheModel("materials/sprites/glow06.vmt");
 	
 	g_bRoundStarted = false;
+	g_bPause = false;
 }
 
 public void Event_RoundStart(Event event, const char[] name, bool bDontBroadcast)
@@ -277,6 +294,7 @@ public void OnRoundEnd(Handle event, char[] name, bool dontBroadcast)
 {
 	g_bRoundStarted = false;
 	g_bMarker = false;
+	g_bPause = false;
 	for (int i = 1; i <= MaxClients; i++)
 	{
 		if (IsValidClient(i))
@@ -318,6 +336,14 @@ public Action CMD_Weapon(int client, int args)
 		{
 			ReplyToCommand(client, " \x04[Zombie-Escape]\x01 You have to be a human");
 		}
+	}
+}
+
+public Action CMD_Admin(int client, int args)
+{
+	if (IsValidClient(client) && IsClientAdmin(client))
+	{
+		openAdmin(client);
 	}
 }
 
