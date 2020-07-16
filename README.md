@@ -19,7 +19,7 @@
     - Admin flag: b (ban)
     - Leader flag: o (custom_1)
     
-    - Commands:
+* **Commands:**
     - /leader [LEADER MENU][/COLOR]
     - /zr, /menu, /ze, /zm [MAIN MENU][/COLOR]
     - /respawn, /r [RESPAWN DURING FIRST INFECTION TIME]
