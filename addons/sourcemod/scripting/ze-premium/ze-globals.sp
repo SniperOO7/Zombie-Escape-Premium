@@ -21,6 +21,11 @@ ConVar g_cZEDefendModelVmt;
 ConVar g_cZEDefendModelVtf;
 ConVar g_cZEFollowmeModelVmt;
 ConVar g_cZEFollowmeModelVtf;
+ConVar g_cZENemesis;
+ConVar g_cZENemesisModel;
+ConVar g_cZENemesisHP;
+ConVar g_cZENemesisSpeed;
+ConVar g_cZENemesisGravity;
 
 //Database g_hDatabase;
 
@@ -29,6 +34,7 @@ ConVar g_cZEFollowmeModelVtf;
 //MODELS
 char HUMANMODEL[128];
 char ZOMBIEMODEL[128];
+char NEMESISMODEL[128];
 char DEFEND[128], DEFENDVTF[128];
 char FOLLOWME[128], FOLLOWMEVTF[128];
 
@@ -49,6 +55,7 @@ Handle H_Beacon[MAXPLAYERS + 1];
 
 //ZOMBIES
 bool g_bInfected[MAXPLAYERS + 1] = false;
+bool g_bIsNemesis[MAXPLAYERS + 1] = false;
 int i_pause[MAXPLAYERS + 1];
 
 //CLASSES
@@ -59,6 +66,7 @@ int i_protection[MAXPLAYERS + 1];
 //GAME
 int i_Infection;
 bool g_bRoundStarted = false;
+bool g_bPause = false;
 
 //SHOP
 bool g_bFireHE[MAXPLAYERS + 1] = false;

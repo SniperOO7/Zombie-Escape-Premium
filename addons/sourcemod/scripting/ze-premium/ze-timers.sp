@@ -1,6 +1,10 @@
 public Action FirstInfection(Handle timer)
 {
-	i_Infection--;
+	if(g_bPause == false)
+	{
+		i_Infection--;
+	}
+	
 	if(i_Infection > 0)
 	{	
 		CheckTimer();
@@ -69,11 +73,12 @@ public Action FirstInfection(Handle timer)
 		int infection;
 		int firstinfected;
 		int user;
+		int nemesis;
 		do
 		{
 			infection++;
 			if(infection <= 1)
-			{
+			{	
 				firstinfected = GetRandomsPlayer();
 				g_bInfected[firstinfected] = true;
 				CS_SwitchTeam(firstinfected, CS_TEAM_T);
@@ -100,6 +105,19 @@ public Action FirstInfection(Handle timer)
 					SetEntProp(firstinfected, Prop_Send, "m_iAccount", money + spended[firstinfected]);
 				}
 				EmitSoundToAll("ze_premium/ze-respawn.mp3", firstinfected);
+				if(g_cZENemesis.IntValue > 0)
+				{
+					int nemesischance = GetRandomInt(1, 100);
+					if(nemesischance >= 1 && nemesischance <= g_cZENemesis.IntValue)
+					{
+						EmitSoundToAll("ze_premium/ze-nemesis.mp3");
+						nemesis = 1;
+						SetEntityHealth(firstinfected, g_cZENemesisHP.IntValue);
+						SetEntityModel(firstinfected, NEMESISMODEL);
+						SetEntPropFloat(firstinfected, Prop_Data, "m_flLaggedMovementValue", g_cZENemesisSpeed.FloatValue);
+						SetEntityGravity(firstinfected, g_cZENemesisGravity.FloatValue);
+					}
+				}
 			}
 			else
 			{
@@ -137,11 +155,19 @@ public Action FirstInfection(Handle timer)
 		{
 			if (IsValidClient(i))
 			{
-				SetHudTextParams(-1.0, 0.1, 3.02, 255, 0, 0, 255, 0, 0.0, 0.0, 0.0);
-				ShowHudText(i, -1, "Player %N was infected ! Apocalypse has started...", firstinfected);
+				if(nemesis == 0)
+				{
+					SetHudTextParams(-1.0, 0.1, 4.02, 255, 0, 0, 255, 0, 0.0, 0.0, 0.0);
+					ShowHudText(i, -1, "Player %N was infected ! Apocalypse has started...", firstinfected);
+				}
+				else
+				{
+					SetHudTextParams(-1.0, 0.1, 4.02, 139, 0, 0, 255, 0, 0.0, 0.0, 0.0);
+					ShowHudText(i, -1, "Player %N is NEMESIS ! Run, run save your lives...", firstinfected);
+				}
 			}
 		}
-		PrintToChatAll(" \x04[Zombie-Escape]\x01 Player \x04%N\x01 was infected! Apocalypse has started...", firstinfected);
+		PrintToChatAll(" \x04[Zombie-Escape]\x01 Player \x04%N\x01 is first zombie! Apocalypse has started...", firstinfected);
 		KillTimer(H_FirstInfection);
 		H_FirstInfection = null;	
 	}

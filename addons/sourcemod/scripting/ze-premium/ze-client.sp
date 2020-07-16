@@ -10,6 +10,7 @@ public void OnClientDisconnect(int client)
 	g_bHadHe[client] = false;
 	g_bInfected[client] = false;
 	g_bFireHE[client] = false;
+	g_bIsNemesis[client] = false;
 	g_bOnFire[client] = false;
 	g_bFreezeFlash[client] = false;
 }
@@ -23,6 +24,7 @@ public void OnClientPutInServer(int client)
 	g_bBeacon[client] = false;
 	g_bFireHE[client] = false;
 	g_bHadHe[client] = false;
+	g_bIsNemesis[client] = false;
 	g_bOnFire[client] = false;
 	g_bFreezeFlash[client] = false;
 	i_zclass[client] = 0;

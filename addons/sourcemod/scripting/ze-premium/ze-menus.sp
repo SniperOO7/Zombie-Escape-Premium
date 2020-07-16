@@ -696,12 +696,21 @@ void openAdmin(int client)
 	if(IsClientAdmin(client))
 	{
 		menu.AddItem("menu1", "Change team");
+		if(g_bPause == true)
+		{
+			menu.AddItem("menu2", "Pause infection timer [ACTIVE]");
+		}
+		else
+		{
+			menu.AddItem("menu2", "Pause infection timer");
+		}
 	}
 	else
 	{
 		menu.AddItem("menu1", "Change team", ITEMDRAW_DISABLED);
+		menu.AddItem("menu2", "Pause infection timer", ITEMDRAW_DISABLED);
 	}
-	menu.AddItem("menu2", "Leader");
+	menu.AddItem("menu3", "Leader");
 	
 	menu.Display(client, MENU_TIME_FOREVER);
 }
@@ -722,6 +731,21 @@ public int mZeAdminHandler(Menu menu, MenuAction action, int client, int index)
 					openSwapTeam(client);
 				}
 				else if (StrEqual(szItem, "menu2"))
+				{
+					if(g_bPause == false)
+					{
+						g_bPause = true;
+						PrintToChatAll(" \x04[ZE-Admin]\x01 Admin\x06 %N\x01 paused infection timer!");
+						openAdmin(client);
+					}
+					else
+					{
+						g_bPause = false;
+						PrintToChatAll(" \x04[ZE-Admin]\x01 Admin\x06 %N\x01 unpased infection timer!");
+						openAdmin(client);
+					}
+				}
+				else if (StrEqual(szItem, "menu3"))
 				{
 					openLeader(client);
 				}
@@ -961,6 +985,7 @@ public int mRoundBanHandler(Menu menu, MenuAction action, int client, int index)
 						SetEntPropFloat(user, Prop_Data, "m_flLaggedMovementValue", 1.0);
 						SetEntityGravity(user, 1.0);
 					}
+					openSwapTeam(client);
 				}
 			}
 		}

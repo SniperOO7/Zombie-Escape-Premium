@@ -58,6 +58,7 @@ public void OnPlayerDeath(Handle event, char[] name, bool dontBroadcast)
 			{
 				EmitSoundToAll("ze_premium/ze-die.mp3", client);
 			}
+			g_bIsNemesis[client] = false;
 			CreateTimer(1.0, Respawn, client);
 		}
 	}
