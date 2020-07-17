@@ -311,7 +311,6 @@ public void OnRoundEnd(Handle event, char[] name, bool dontBroadcast)
 				H_Beacon[i] = null;	
 			}
 			g_bFireHE[i] = false;
-			g_bHadHe[i] = false;
 			g_bOnFire[i] = false;
 			g_bFreezeFlash[i] = false;
 		}
