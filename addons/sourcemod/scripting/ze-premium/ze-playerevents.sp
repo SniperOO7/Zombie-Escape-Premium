@@ -129,7 +129,7 @@ public Action OnTakeDamage(int victim, int &attacker, int &inflictor, float &dam
 					g_bInfected[victim] = true;
 					PrintToChat(victim, " \x04[Zombie-Escape]\x01 You was infected by \x06%N\x01, now you have to infect other players!", attacker);
 					SetEntProp(attacker, Prop_Data, "m_iFrags", GetClientFrags(attacker) + 1);
-					PrintToChat(attacker, " \x04[Zombie-Escape]\x01 You got \x041\x01 frag for infecting \x07%N!", attacker, victim);
+					PrintToChat(attacker, " \x04[Zombie-Escape]\x01 You got \x041\x01 frag for infecting \x07%N!", victim);
 					
 					Call_StartForward(gF_ClientInfected);
 					Call_PushCell(victim);
