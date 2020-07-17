@@ -3,7 +3,7 @@
 #define DEBUG
 
 #define PLUGIN_AUTHOR "Sniper007"
-#define PLUGIN_VERSION "3.00"
+#define PLUGIN_VERSION "3.50"
 
 #include <sourcemod>
 #include <sdktools>
@@ -82,6 +82,9 @@ public void OnPluginStart()
 	g_cZENemesisSpeed = CreateConVar("sm_ze_nemesis_speed", "1.7", "Amout of nemesis speed");
 	g_cZENemesisGravity = CreateConVar("sm_ze_nemesis_gravity", "0.7", "Amout of nemesis gravity");
 	
+	g_cZEZombieRiots = CreateConVar("sm_ze_zombie_riot", "10", "How much chance in percent to will be zombie riot round, 0 = disabled");
+	g_cZEZombieShieldType = CreateConVar("sm_ze_zombie_riot_shield", "1", "When will player get shield (1 = after infected, respawn, 0 = only after respawn)");
+	
 	g_cZEBomberMan = CreateConVar("sm_ze_bomberman_grenade", "weapon_hegrenade", "Type of grenade for bomber-man [HUMAN CLASS]");
 	g_cZEHealer = CreateConVar("sm_ze_healer_healthshot", "weapon_healthshot", "Type of item, what will healer get [HUMAN CLASS]");
 	g_cZEHeavyman = CreateConVar("sm_ze_heavyman_hp", "50", "How much HP, will tank get [HUMAN CLASS]");
@@ -112,11 +115,15 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 {
 	// Natives
 	CreateNative("ZR_IsInfection", Native_StartingInfection);
+	CreateNative("ZR_IsSpecialround", Native_SpecialRound);
+	CreateNative("ZR_RespawnAction", Native_SetRespawnAction);
 	CreateNative("ZR_IsClientZombie", Native_IsInfected);
 	CreateNative("ZR_IsClientHuman", Native_IsHuman);
 	CreateNative("ZR_IsNemesis", Native_IsNemesis);
 	
 	gF_ClientInfected = CreateGlobalForward("ZR_OnClientInfected", ET_Ignore, Param_Cell, Param_Cell);
+	gF_ClientHumanPost = CreateGlobalForward("ZR_OnClientHumanPost", ET_Ignore, Param_Cell);
+	gF_ClientRespawned = CreateGlobalForward("ZR_OnClientRespawned", ET_Ignore, Param_Cell);
 	
 	RegPluginLibrary("zepremium");
 	
@@ -184,6 +191,7 @@ public void OnMapStart()
 	AddFileToDownloadsTable("sound/ze_premium/ze-nemesispain.mp3");
 	AddFileToDownloadsTable("sound/ze_premium/ze-nemesispain2.mp3");
 	AddFileToDownloadsTable("sound/ze_premium/ze-nemesispain3.mp3");
+	AddFileToDownloadsTable("sound/ze_premium/ze-riotround.mp3");
 	
 	AddFileToDownloadsTable("sound/ze_premium/10.mp3");
 	AddFileToDownloadsTable("sound/ze_premium/9.mp3");
@@ -219,6 +227,7 @@ public void OnMapStart()
 	PrecacheSound("ze_premium/ze-nemesispain.mp3");
 	PrecacheSound("ze_premium/ze-nemesispain2.mp3");
 	PrecacheSound("ze_premium/ze-nemesispain3.mp3");
+	PrecacheSound("ze_premium/ze-riotround.mp3");
 	
 	PrecacheSound("ze_premium/10.mp3");
 	PrecacheSound("ze_premium/9.mp3");
@@ -289,6 +298,8 @@ public void OnRoundEnd(Handle event, char[] name, bool dontBroadcast)
 	g_bRoundStarted = false;
 	g_bMarker = false;
 	g_bPause = false;
+	i_Riotround = 0;
+	i_SpecialRound = 0;
 	for (int i = 1; i <= MaxClients; i++)
 	{
 		if (IsValidClient(i))
@@ -313,6 +324,7 @@ public void OnRoundEnd(Handle event, char[] name, bool dontBroadcast)
 			g_bFireHE[i] = false;
 			g_bOnFire[i] = false;
 			g_bFreezeFlash[i] = false;
+			g_bNoRespawn[i] = false;
 		}
 	}
 }
