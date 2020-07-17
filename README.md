@@ -1,6 +1,6 @@
 ![ddisp](https://i.imgur.com/02IiCZ1.png)
 * **AlliedModders version: https://forums.alliedmods.net/showthread.php?t=326056**
-* **You can give me donate: https://www.paypal.com/donate/?token=I8VnWw7dTR1UuuwNms5HuITea1hLrXFip1zXa8rLtMER1B9olD2mVZx1bf-lyceAek0AyG&country.x=CZ&locale.x=CZ**
+* **You can give me donate: https://www.paypal.me/redsstudio**
 
 ![ddisp](https://i.imgur.com/WWKtEuh.png)
 * **What zombie escape have ?**
