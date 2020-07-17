@@ -34,3 +34,11 @@ native bool ZR_IsClientHuman(int client);
  * @return        True if is player nemesis
  */
 native bool ZR_IsNemesis(int client);
+
+/**
+ * Called after a player is infected by other player
+ * 
+ * @param client			The client that was infected.
+ * @param attacker		  The the infecter. (-1 if there is no infecter)
+ */
+forward void ZR_OnClientInfected(int client, int attacker);
