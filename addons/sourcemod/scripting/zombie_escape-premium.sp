@@ -3,20 +3,22 @@
 #define DEBUG
 
 #define PLUGIN_AUTHOR "Sniper007"
-#define PLUGIN_VERSION "2.00"
+#define PLUGIN_VERSION "3.00"
 
 #include <sourcemod>
 #include <sdktools>
 #include <cstrike>
+#include <smlib>
 #include <sdkhooks>
+#include <zepremium>
 #include <emitsoundany>
 
 #include "ze-premium/ze-globals.sp"
+#include "ze-premium/ze-stocks.sp"
 #include "ze-premium/ze-client.sp"
 #include "ze-premium/ze-timers.sp"
 #include "ze-premium/ze-playerevents.sp"
 #include "ze-premium/ze-menus.sp"
-#include "ze-premium/ze-stocks.sp"
 #include "ze-premium/ze-natives.sp"
 
 #pragma newdecls required
@@ -80,6 +82,17 @@ public void OnPluginStart()
 	g_cZENemesisSpeed = CreateConVar("sm_ze_nemesis_speed", "1.7", "Amout of nemesis speed");
 	g_cZENemesisGravity = CreateConVar("sm_ze_nemesis_gravity", "0.7", "Amout of nemesis gravity");
 	
+	g_cZEBomberMan = CreateConVar("sm_ze_bomberman_grenade", "weapon_hegrenade", "Type of grenade for bomber-man [HUMAN CLASS]");
+	g_cZEHealer = CreateConVar("sm_ze_healer_healthshot", "weapon_healthshot", "Type of item, what will healer get [HUMAN CLASS]");
+	g_cZEHeavyman = CreateConVar("sm_ze_heavyman_hp", "50", "How much HP, will tank get [HUMAN CLASS]");
+	g_cZEBigboss = CreateConVar("sm_ze_bigboss_extralives", "1", "How many extra lives will big boss have [HUMAN CLASS]");
+	
+	g_cZERunner = CreateConVar("sm_ze_runner", "0.3", "How much speed, wil runner get [ZOMBIE CLASS]");
+	g_cZETank = CreateConVar("sm_ze_tank", "2000", "How much HP, will tank get [ZOMBIE CLASS]");
+	g_cZEGravity = CreateConVar("sm_ze_gravity", "0.8", "How much gravity, will gravity get [ZOMBIE CLASS]");
+	g_cZEEvilClownSpeed = CreateConVar("sm_ze_evilclown_speed", "0.2", "How much +speed (sm_ze_zombiespeed + evil clown speed) will evil clown get [ZOMBIE CLASS]");
+	g_cZEEvilClownHP = CreateConVar("sm_ze_evilclown_hp", "1000", "How much HP will evil clown get [ZOMBIE CLASS]");
+	
 	g_cZEFirstInfection = CreateConVar("sm_ze_infection", "30", "Time to first infection");
 	g_cZEZombieHP = CreateConVar("sm_ze_zombiehp", "10000", "Amout of zombie HP");
 	g_cZEMotherZombieHP = CreateConVar("sm_ze_motherzombiehp", "20000", "Amout of mother zombie HP");
@@ -102,6 +115,8 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 	CreateNative("ZR_IsClientZombie", Native_IsInfected);
 	CreateNative("ZR_IsClientHuman", Native_IsHuman);
 	CreateNative("ZR_IsNemesis", Native_IsNemesis);
+	
+	gF_ClientInfected = CreateGlobalForward("ZR_OnClientInfected", ET_Ignore, Param_Cell, Param_Cell);
 	
 	RegPluginLibrary("zepremium");
 	
@@ -166,6 +181,9 @@ public void OnMapStart()
 	AddFileToDownloadsTable("sound/ze_premium/ze-pain6.mp3");
 	AddFileToDownloadsTable("sound/ze_premium/ze-respawn.mp3");
 	AddFileToDownloadsTable("sound/ze_premium/ze-nemesis.mp3");
+	AddFileToDownloadsTable("sound/ze_premium/ze-nemesispain.mp3");
+	AddFileToDownloadsTable("sound/ze_premium/ze-nemesispain2.mp3");
+	AddFileToDownloadsTable("sound/ze_premium/ze-nemesispain3.mp3");
 	
 	AddFileToDownloadsTable("sound/ze_premium/10.mp3");
 	AddFileToDownloadsTable("sound/ze_premium/9.mp3");
@@ -198,6 +216,9 @@ public void OnMapStart()
 	PrecacheSound("ze_premium/ze-pain6.mp3");
 	PrecacheSound("ze_premium/ze-respawn.mp3");
 	PrecacheSound("ze_premium/ze-nemesis.mp3");
+	PrecacheSound("ze_premium/ze-nemesispain.mp3");
+	PrecacheSound("ze_premium/ze-nemesispain2.mp3");
+	PrecacheSound("ze_premium/ze-nemesispain3.mp3");
 	
 	PrecacheSound("ze_premium/10.mp3");
 	PrecacheSound("ze_premium/9.mp3");
@@ -235,35 +256,7 @@ public void Event_RoundStart(Event event, const char[] name, bool bDontBroadcast
 			{	
 				SetEntPropFloat(i, Prop_Data, "m_flLaggedMovementValue", 1.0);
 				SetEntProp(i, Prop_Data, "m_takedamage", 0, 1);
-				if (i_hclass[i] == 1)
-				{
-					SetEntityHealth(i, g_cZEHumanHP.IntValue);
-					GivePlayerItem(i, "weapon_hegrenade");
-					SetEntityModel(i, HUMANMODEL);
-				}
-				else if (i_hclass[i] == 2)
-				{
-					SetEntityHealth(i, g_cZEHumanHP.IntValue);
-					GivePlayerItem(i, "weapon_healthshot");
-					SetEntityModel(i, HUMANMODEL);
-				}
-				else if (i_hclass[i] == 3)
-				{
-					int newhp = g_cZEHumanHP.IntValue + 50;
-					SetEntityHealth(i, newhp);
-					SetEntityModel(i, HUMANMODEL);
-				}
-				else if (i_hclass[i] == 4)
-				{
-					i_protection[i] = 1;
-					SetEntityHealth(i, g_cZEHumanHP.IntValue);
-					SetEntityModel(i, HUMANMODEL);
-				}
-				else
-				{
-					SetEntityHealth(i, g_cZEHumanHP.IntValue);
-					SetEntityModel(i, HUMANMODEL);
-				}
+				HumanClass(i);
 				
 				if (g_bSamegun[i] == true)
 				{
