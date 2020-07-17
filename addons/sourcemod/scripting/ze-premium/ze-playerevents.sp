@@ -8,7 +8,7 @@ public void OnPlayerDeath(Handle event, char[] name, bool dontBroadcast)
 		g_bFireHE[client] = false;
 		g_bOnFire[client] = false;
 		g_bFreezeFlash[client] = false;
-		g_bHadHe[client] = false;
+		g_bBeacon[client] = false;
 		if(GetClientTeam(client) == CS_TEAM_CT)
 		{
 			int die = GetRandomInt(1, 3);
@@ -34,11 +34,6 @@ public void OnPlayerDeath(Handle event, char[] name, bool dontBroadcast)
 				KillTimer(H_Beacon[client]);
 				H_Beacon[client] = null;	
 			}
-			g_bBeacon[client] = false;
-			g_bFireHE[client] = false;
-			g_bHadHe[client] = false;
-			g_bOnFire[client] = false;
-			g_bFreezeFlash[client] = false;
 			g_bInfected[client] = true;
 			CS_SwitchTeam(client, CS_TEAM_T);
 			CreateTimer(1.0, Respawn, client);
@@ -199,7 +194,7 @@ public Action OnTakeDamage(int victim, int &attacker, int &inflictor, float &dam
 	
 	if(damagetype & DMG_BLAST)
 	{
-		if(IsValidClient(victim) && attacker != victim && g_bHadHe[attacker] == true)
+		if(IsValidClient(victim) && attacker != victim && g_bFireHE[attacker] == true)
 		{
 			if(GetClientTeam(victim) == CS_TEAM_CT)
 			{
@@ -208,10 +203,11 @@ public Action OnTakeDamage(int victim, int &attacker, int &inflictor, float &dam
 			else
 			{
 				g_bOnFire[victim] = true;
-				g_bHadHe[attacker] = false;
+				g_bFireHE[attacker] = false;
 				EmitSoundToAll("ze_premium/ze-fire.mp3", victim);
 				CreateTimer(3.0, Onfire, victim);
 				CreateTimer(5.0, Slowdown, victim);
+				IgniteEntity(victim, 5.0);
 				SetEntPropFloat(victim, Prop_Data, "m_flLaggedMovementValue", 0.5);
 			}
 		}
@@ -241,21 +237,4 @@ public Action Event_PlayerHurt(Event event, const char[] name, bool dontBroadcas
 			event1.Fire();
 		}
 	}
-
-	if (attacker == 0 || !g_bFireHE[attacker]) 
-		return;
-
-	if (victim != attacker && attacker !=0 && attacker <MAXPLAYERS)
-	{
-		char sWeaponUsed[50];
-		GetEventString(event,"weapon",sWeaponUsed,sizeof(sWeaponUsed));
-
-		if (StrEqual(sWeaponUsed,"hegrenade"))
-		{			
-			IgniteEntity(victim, 5.0);
-		}
-	}
-
-	g_bFireHE[attacker] = false;
-	g_bHadHe[attacker] = true;
 }

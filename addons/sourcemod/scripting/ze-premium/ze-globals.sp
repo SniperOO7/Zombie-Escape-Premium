@@ -83,5 +83,4 @@ bool g_bPause = false;
 bool g_bFireHE[MAXPLAYERS + 1] = false;
 bool g_bOnFire[MAXPLAYERS + 1] = false;
 bool g_bFreezeFlash[MAXPLAYERS + 1] = false;
-bool g_bHadHe[MAXPLAYERS + 1] = false;
 int spended[MAXPLAYERS + 1];
