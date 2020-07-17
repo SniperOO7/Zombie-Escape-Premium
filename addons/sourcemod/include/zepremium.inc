@@ -12,6 +12,14 @@
 native bool ZR_IsInfection();
 
 /**
+ * Check if is special round (Nemesis or Zombie riot round)
+ *
+ * @param client
+ * @return        True if is special round
+ */
+native bool ZR_IsSpecialround();
+
+/**
  * Check if is player infected or not
  *
  * @param client
@@ -42,3 +50,27 @@ native bool ZR_IsNemesis(int client);
  * @param attacker		  The the infecter. (-1 if there is no infecter)
  */
 forward void ZR_OnClientInfected(int client, int attacker);
+
+/**
+ * Called after a player has become a human. (Through an admin command.)
+ * 
+ * @param client			The client index.
+ */
+forward void ZR_OnClientHumanPost(int client);
+
+/**
+ * Called after player is respawned.
+ * 
+ * @param client			The client index.
+ *	
+ */
+forward void ZR_OnClientRespawned(int client);
+
+/**
+ * Set if client will be next time respawned or not
+ *
+ * @param client		The client index.
+ * @param respawnaction		1 = disable respawn on whole round, 0 = enable respawn on whole round
+ * @NoReturn
+ */
+native void ZR_RespawnAction(int client, int respawnaction);
