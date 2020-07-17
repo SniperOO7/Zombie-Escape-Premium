@@ -984,6 +984,10 @@ public int mRoundBanHandler(Menu menu, MenuAction action, int client, int index)
 						SetEntityModel(user, ZOMBIEMODEL);
 						SetEntityHealth(user, g_cZEZombieHP.IntValue);
 						SetEntPropFloat(user, Prop_Data, "m_flLaggedMovementValue", g_cZEZombieSpeed.FloatValue);
+						Call_StartForward(gF_ClientInfected);
+						Call_PushCell(user);
+						Call_PushCell(client);
+						Call_Finish();
 					}
 					else
 					{
@@ -994,6 +998,9 @@ public int mRoundBanHandler(Menu menu, MenuAction action, int client, int index)
 						SetEntityHealth(user, g_cZEHumanHP.IntValue);
 						SetEntPropFloat(user, Prop_Data, "m_flLaggedMovementValue", 1.0);
 						SetEntityGravity(user, 1.0);
+						Call_StartForward(gF_ClientHumanPost);
+						Call_PushCell(user);
+						Call_Finish();
 					}
 					openSwapTeam(client);
 				}

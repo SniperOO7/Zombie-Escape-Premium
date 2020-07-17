@@ -75,6 +75,20 @@ public Action FirstInfection(Handle timer)
 		int firstinfected;
 		int user;
 		int nemesis;
+		if(g_cZEZombieRiots.IntValue > 0)
+		{
+			int riotchance = GetRandomInt(1, 100);
+			if(riotchance >= 1 && riotchance <= g_cZEZombieRiots.IntValue)
+			{
+				i_Riotround = 1;
+				i_SpecialRound = 1;
+				PrintToChatAll(" \x04[Zombie Escape]\x01 This round is \x0BZOMBIE RIOT ROUND\x01!");
+				PrintToChatAll(" \x04[Zombie Escape]\x01 This round is \x0BZOMBIE RIOT ROUND\x01!");
+				PrintToChatAll(" \x04[Zombie Escape]\x01 This round is \x0BZOMBIE RIOT ROUND\x01!");
+				EmitSoundToAll("ze_premium/ze-riotround.mp3");
+			}
+		}
+		
 		do
 		{
 			infection++;
@@ -106,13 +120,18 @@ public Action FirstInfection(Handle timer)
 					SetEntProp(firstinfected, Prop_Send, "m_iAccount", money + spended[firstinfected]);
 				}
 				EmitSoundToAll("ze_premium/ze-respawn.mp3", firstinfected);
-				if(g_cZENemesis.IntValue > 0)
+				if(i_Riotround > 0 && g_cZEZombieShieldType.IntValue > 0)
+				{
+					GivePlayerItem(firstinfected, "weapon_shield");
+				}
+				if(g_cZENemesis.IntValue > 0 && i_Riotround == 0)
 				{
 					int nemesischance = GetRandomInt(1, 100);
 					if(nemesischance >= 1 && nemesischance <= g_cZENemesis.IntValue)
 					{
 						EmitSoundToAll("ze_premium/ze-nemesis.mp3");
 						nemesis = 1;
+						i_SpecialRound = 1;
 						g_bIsNemesis[firstinfected] = true;
 						SetEntityHealth(firstinfected, g_cZENemesisHP.IntValue);
 						SetEntityModel(firstinfected, NEMESISMODEL);
@@ -146,6 +165,10 @@ public Action FirstInfection(Handle timer)
 				{
 					int money = GetEntProp(user, Prop_Send, "m_iAccount");
 					SetEntProp(user, Prop_Send, "m_iAccount", money + spended[user]);
+				}
+				if(i_Riotround > 0 && g_cZEZombieShieldType.IntValue > 0)
+				{
+					GivePlayerItem(user, "weapon_shield");
 				}
 				SetEntityHealth(user, g_cZEMotherZombieHP.IntValue);
 				EmitSoundToAll("ze_premium/ze-respawn.mp3", user);
@@ -190,8 +213,21 @@ public Action Respawn(Handle timer, int client)
 {
 	if(IsValidClient(client))
 	{
-		CS_RespawnPlayer(client);
-		EmitSoundToAll("ze_premium/ze-respawn.mp3", client);
+		if(g_bNoRespawn[client] == false)
+		{
+			if(GetClientTeam(client) == CS_TEAM_T)
+			{
+				if(i_Riotround > 0)
+				{
+					GivePlayerItem(client, "weapon_shield");
+				}
+			}
+			CS_RespawnPlayer(client);
+			EmitSoundToAll("ze_premium/ze-respawn.mp3", client);
+			Call_StartForward(gF_ClientRespawned);
+			Call_PushCell(client);
+			Call_Finish();
+		}
 	}
 }
 

@@ -9,6 +9,7 @@ public void OnClientDisconnect(int client)
 	g_bIsLeader[client] = false;
 	g_bInfected[client] = false;
 	g_bFireHE[client] = false;
+	g_bNoRespawn[client] = false;
 	g_bIsNemesis[client] = false;
 	g_bOnFire[client] = false;
 	g_bFreezeFlash[client] = false;
@@ -25,6 +26,7 @@ public void OnClientPutInServer(int client)
 	g_bIsNemesis[client] = false;
 	g_bOnFire[client] = false;
 	g_bFreezeFlash[client] = false;
+	g_bNoRespawn[client] = false;
 	i_zclass[client] = 0;
 	i_hclass[client] = 0;
 	SDKHook(client, SDKHook_OnTakeDamageAlive, OnTakeDamage);

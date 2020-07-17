@@ -125,6 +125,10 @@ public Action OnTakeDamage(int victim, int &attacker, int &inflictor, float &dam
 					PrintToChat(victim, " \x04[Zombie-Escape]\x01 You was infected by \x06%N\x01, now you have to infect other players!", attacker);
 					SetEntProp(attacker, Prop_Data, "m_iFrags", GetClientFrags(attacker) + 1);
 					PrintToChat(attacker, " \x04[Zombie-Escape]\x01 You got \x041\x01 frag for infecting \x07%N!", victim);
+					if(i_Riotround > 0 && g_cZEZombieShieldType.IntValue > 0)
+					{
+						GivePlayerItem(victim, "weapon_shield");
+					}
 					
 					Call_StartForward(gF_ClientInfected);
 					Call_PushCell(victim);

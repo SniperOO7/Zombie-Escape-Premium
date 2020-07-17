@@ -2,6 +2,8 @@
 
 Handle H_FirstInfection;
 Handle gF_ClientInfected;
+Handle gF_ClientRespawned;
+Handle gF_ClientHumanPost;
 
 int g_iBeamSprite;
 int g_iHaloSprite;
@@ -36,6 +38,8 @@ ConVar g_cZETank;
 ConVar g_cZEGravity;
 ConVar g_cZEEvilClownSpeed;
 ConVar g_cZEEvilClownHP;
+ConVar g_cZEZombieRiots;
+ConVar g_cZEZombieShieldType;
 
 //Database g_hDatabase;
 
@@ -68,6 +72,9 @@ bool g_bInfected[MAXPLAYERS + 1] = false;
 bool g_bIsNemesis[MAXPLAYERS + 1] = false;
 int i_pause[MAXPLAYERS + 1];
 bool g_bNotDied[MAXPLAYERS + 1];
+bool g_bNoRespawn[MAXPLAYERS + 1] = false;
+int i_Riotround;
+int i_SpecialRound;
 
 //CLASSES
 int i_zclass[MAXPLAYERS + 1];
