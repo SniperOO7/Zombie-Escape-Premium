@@ -113,6 +113,7 @@ public Action FirstInfection(Handle timer)
 					{
 						EmitSoundToAll("ze_premium/ze-nemesis.mp3");
 						nemesis = 1;
+						g_bIsNemesis[firstinfected] = true;
 						SetEntityHealth(firstinfected, g_cZENemesisHP.IntValue);
 						SetEntityModel(firstinfected, NEMESISMODEL);
 						SetEntPropFloat(firstinfected, Prop_Data, "m_flLaggedMovementValue", g_cZENemesisSpeed.FloatValue);
@@ -176,7 +177,7 @@ public Action FirstInfection(Handle timer)
 
 public Action Timer_Beacon(Handle timer, int client)
 {
-	if(g_bBeacon[client] == true)
+	if(g_bBeacon[client] == true && IsValidClient(client))
 	{
 		float fPos[3];
 		GetClientAbsOrigin(client, fPos);
@@ -187,30 +188,36 @@ public Action Timer_Beacon(Handle timer, int client)
 
 public Action Respawn(Handle timer, int client)
 {
-	CS_RespawnPlayer(client);
-	EmitSoundToAll("ze_premium/ze-respawn.mp3", client);
+	if(IsValidClient(client))
+	{
+		CS_RespawnPlayer(client);
+		EmitSoundToAll("ze_premium/ze-respawn.mp3", client);
+	}
 }
 
 public Action SwitchTeam(Handle timer, int client)
 {
-	if(g_bRoundStarted == true)
+	if(IsValidClient(client))
 	{
-		g_bInfected[client] = true;
-		CS_SwitchTeam(client, CS_TEAM_T);
-		CS_RespawnPlayer(client);
-	}
-	else
-	{
-		int random = GetRandomInt(1, 2);
-		if(random == 1)
+		if(g_bRoundStarted == true)
 		{
+			g_bInfected[client] = true;
 			CS_SwitchTeam(client, CS_TEAM_T);
 			CS_RespawnPlayer(client);
 		}
 		else
 		{
-			CS_SwitchTeam(client, CS_TEAM_CT);
-			CS_RespawnPlayer(client);
+			int random = GetRandomInt(1, 2);
+			if(random == 1)
+			{
+				ChangeClientTeam(client, CS_TEAM_T);
+				CS_RespawnPlayer(client);
+			}
+			else
+			{
+				ChangeClientTeam(client, CS_TEAM_CT);
+				CS_RespawnPlayer(client);
+			}
 		}
 	}
 }

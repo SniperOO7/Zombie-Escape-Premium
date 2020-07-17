@@ -1,6 +1,7 @@
 #define FREEZE_SOUND "ze_premium/freeze.mp3"
 
 Handle H_FirstInfection;
+Handle gF_ClientInfected;
 
 int g_iBeamSprite;
 int g_iHaloSprite;
@@ -26,6 +27,15 @@ ConVar g_cZENemesisModel;
 ConVar g_cZENemesisHP;
 ConVar g_cZENemesisSpeed;
 ConVar g_cZENemesisGravity;
+ConVar g_cZEBomberMan;
+ConVar g_cZEHealer;
+ConVar g_cZEHeavyman;
+ConVar g_cZEBigboss;
+ConVar g_cZERunner;
+ConVar g_cZETank;
+ConVar g_cZEGravity;
+ConVar g_cZEEvilClownSpeed;
+ConVar g_cZEEvilClownHP;
 
 //Database g_hDatabase;
 
@@ -57,6 +67,7 @@ Handle H_Beacon[MAXPLAYERS + 1];
 bool g_bInfected[MAXPLAYERS + 1] = false;
 bool g_bIsNemesis[MAXPLAYERS + 1] = false;
 int i_pause[MAXPLAYERS + 1];
+bool g_bNotDied[MAXPLAYERS + 1];
 
 //CLASSES
 int i_zclass[MAXPLAYERS + 1];

@@ -293,3 +293,81 @@ void CheckTeam(int client)
 		}
 	}
 }
+
+void HumanClass(int client)
+{
+	if (i_hclass[client] == 1)
+	{
+		SetEntityHealth(client, g_cZEHumanHP.IntValue);
+		char bomberman[64];
+		g_cZEBomberMan.GetString(bomberman, sizeof(bomberman));
+		GivePlayerItem(client, bomberman);
+		SetEntityModel(client, HUMANMODEL);
+		SetEntPropFloat(client, Prop_Data, "m_flLaggedMovementValue", 1.0);
+	}
+	else if (i_hclass[client] == 2)
+	{
+		SetEntityHealth(client, g_cZEHumanHP.IntValue);
+		char healer[64];
+		g_cZEHealer.GetString(healer, sizeof(healer));
+		GivePlayerItem(client, healer);
+		SetEntityModel(client, HUMANMODEL);
+		SetEntPropFloat(client, Prop_Data, "m_flLaggedMovementValue", 1.0);
+	}
+	else if (i_hclass[client] == 3)
+	{
+		int newhp = g_cZEHumanHP.IntValue + g_cZEHeavyman.IntValue;
+		SetEntityHealth(client, newhp);
+		SetEntityModel(client, HUMANMODEL);
+		SetEntPropFloat(client, Prop_Data, "m_flLaggedMovementValue", 1.0);
+	}
+	else if (i_hclass[client] == 4)
+	{
+		i_protection[client] = g_cZEBigboss.IntValue;
+		SetEntityHealth(client, g_cZEHumanHP.IntValue);
+		SetEntityModel(client, HUMANMODEL);
+		SetEntPropFloat(client, Prop_Data, "m_flLaggedMovementValue", 1.0);
+	}
+	else
+	{
+		SetEntityHealth(client, g_cZEHumanHP.IntValue);
+		SetEntityModel(client, HUMANMODEL);
+		SetEntPropFloat(client, Prop_Data, "m_flLaggedMovementValue", 1.0);
+	}
+}
+
+void ZombieClass(int client)
+{
+	if(i_zclass[client] == 1)
+	{
+		float newspeed = g_cZEZombieSpeed.FloatValue + g_cZERunner.FloatValue;
+		SetEntityHealth(client, g_cZEZombieHP.IntValue);
+		SetEntPropFloat(client, Prop_Data, "m_flLaggedMovementValue", newspeed);
+		SetEntityModel(client, ZOMBIEMODEL);
+	}
+	else if(i_zclass[client] == 2)
+	{
+		int newhp = g_cZEZombieHP.IntValue + g_cZETank.IntValue;
+		SetEntityHealth(client, newhp);
+		SetEntityModel(client, ZOMBIEMODEL);
+	}
+	else if(i_zclass[client] == 3)
+	{
+		SetEntityHealth(client, g_cZEZombieHP.IntValue);
+		SetEntityGravity(client, g_cZEGravity.FloatValue);
+		SetEntityModel(client, ZOMBIEMODEL);
+	}
+	else if(i_zclass[client] == 4)
+	{
+		float newspeed = g_cZEZombieSpeed.FloatValue + g_cZEEvilClownSpeed.FloatValue;
+		int newhp = g_cZEZombieHP.IntValue + g_cZEEvilClownHP.IntValue;
+		SetEntityHealth(client, newhp);
+		SetEntPropFloat(client, Prop_Data, "m_flLaggedMovementValue", newspeed);
+		SetEntityModel(client, ZOMBIEMODEL);
+	}
+	else
+	{
+		SetEntityHealth(client, g_cZEZombieHP.IntValue);
+		SetEntityModel(client, ZOMBIEMODEL);
+	}
+}
