@@ -27,7 +27,17 @@ public Action FirstInfection(Handle timer)
 				float percent = float(soucet) / 100;
 				float newpercent = float(numberinfected) / percent;
 				SetHudTextParams(-1.0, 0.1, 1.02, 0, 255, 0, 255, 0, 0.0, 0.0, 0.0);
-				ShowHudText(i, -1, "First infected will be: %i sec\nChance to be infected is: +%.1f percent", i_Infection, newpercent);
+				char sBuffer[12];
+				GetClientCookie(i, H_hAntiDisconnect, sBuffer, sizeof(sBuffer));
+				i_antidisconnect[i] = StringToInt(sBuffer);
+				if(i_antidisconnect[i] > 0)
+				{
+					ShowHudText(i, -1, "First infected will be: %i sec\nYou will be infected [YOU HAVE: %i INFECTION BANS]", i_Infection, i_antidisconnect[i]);
+				}
+				else
+				{
+					ShowHudText(i, -1, "First infected will be: %i sec\nChance to be infected is: +%.1f percent", i_Infection, newpercent);
+				}
 				char ch_humanclass[64];
 				if(i_hclass[i] == 1)
 				{
@@ -57,7 +67,17 @@ public Action FirstInfection(Handle timer)
 		{
 			if (IsValidClient(i))
 			{
-				CS_SwitchTeam(i, CS_TEAM_CT);
+				char sBuffer[12];
+				GetClientCookie(i, H_hAntiDisconnect, sBuffer, sizeof(sBuffer));
+				i_antidisconnect[i] = StringToInt(sBuffer);
+				if(i_antidisconnect[i] > 0)
+				{
+					SetZombie(i, true);
+				}
+				else
+				{
+					CS_SwitchTeam(i, CS_TEAM_CT);
+				}
 				SetEntProp(i, Prop_Data, "m_takedamage", 2, 1);
 			}
 		}
@@ -74,7 +94,7 @@ public Action FirstInfection(Handle timer)
 		int infection;
 		int firstinfected;
 		int user;
-		int nemesis;
+		int nemesis = 0;
 		if(g_cZEZombieRiots.IntValue > 0)
 		{
 			int riotchance = GetRandomInt(1, 100);
@@ -82,9 +102,9 @@ public Action FirstInfection(Handle timer)
 			{
 				i_Riotround = 1;
 				i_SpecialRound = 1;
-				PrintToChatAll(" \x04[Zombie Escape]\x01 This round is \x0BZOMBIE RIOT ROUND\x01!");
-				PrintToChatAll(" \x04[Zombie Escape]\x01 This round is \x0BZOMBIE RIOT ROUND\x01!");
-				PrintToChatAll(" \x04[Zombie Escape]\x01 This round is \x0BZOMBIE RIOT ROUND\x01!");
+				CPrintToChatAll(" \x04[Zombie-Escape]\x01 %t", "riot_round");
+				CPrintToChatAll(" \x04[Zombie-Escape]\x01 %t", "riot_round");
+				CPrintToChatAll(" \x04[Zombie-Escape]\x01 %t", "riot_round");
 				EmitSoundToAll("ze_premium/ze-riotround.mp3");
 			}
 		}
@@ -111,7 +131,7 @@ public Action FirstInfection(Handle timer)
 				if(g_bIsLeader[firstinfected] == true)
 				{
 					g_bIsLeader[firstinfected] = false;
-					PrintToChatAll(" \x04[ZE-Leader]\x01 Leader \x04%N\x01 has died!", firstinfected);
+					CPrintToChatAll(" \x04[ZE-Leader]\x01 %t", "leader_died", firstinfected);
 				}
 				SetEntityHealth(firstinfected, g_cZEMotherZombieHP.IntValue);
 				if(spended[firstinfected] > 0)
@@ -119,7 +139,6 @@ public Action FirstInfection(Handle timer)
 					int money = GetEntProp(firstinfected, Prop_Send, "m_iAccount");
 					SetEntProp(firstinfected, Prop_Send, "m_iAccount", money + spended[firstinfected]);
 				}
-				EmitSoundToAll("ze_premium/ze-respawn.mp3", firstinfected);
 				if(i_Riotround > 0 && g_cZEZombieShieldType.IntValue > 0)
 				{
 					GivePlayerItem(firstinfected, "weapon_shield");
@@ -139,6 +158,16 @@ public Action FirstInfection(Handle timer)
 						SetEntityGravity(firstinfected, g_cZENemesisGravity.FloatValue);
 					}
 				}
+				
+				if(nemesis == 0)
+				{
+					int random = GetRandomInt(1, 3);
+					char soundPath[PLATFORM_MAX_PATH];
+					Format(soundPath, sizeof(soundPath), "ze_premium/ze-firstzm%i.mp3", random);
+					EmitSoundToAll(soundPath);
+				}
+				CreateTimer(g_cZEInfectionTime.FloatValue, AntiDisconnect, firstinfected);
+				g_bAntiDisconnect[firstinfected] = true;
 			}
 			else
 			{
@@ -159,7 +188,7 @@ public Action FirstInfection(Handle timer)
 				if(g_bIsLeader[user] == true)
 				{
 					g_bIsLeader[user] = false;
-					PrintToChatAll(" \x04[ZE-Leader]\x01 Leader \x04%N\x01 has died!", user);
+					CPrintToChatAll(" \x04[ZE-Leader]\x01 %t", "leader_died", user);
 				}
 				if(spended[user] > 0)
 				{
@@ -172,6 +201,8 @@ public Action FirstInfection(Handle timer)
 				}
 				SetEntityHealth(user, g_cZEMotherZombieHP.IntValue);
 				EmitSoundToAll("ze_premium/ze-respawn.mp3", user);
+				CreateTimer(g_cZEInfectionTime.FloatValue, AntiDisconnect, user);
+				g_bAntiDisconnect[user] = true;
 			}
 		} 
 		while (infection < numberinfected);
@@ -192,7 +223,7 @@ public Action FirstInfection(Handle timer)
 				}
 			}
 		}
-		PrintToChatAll(" \x04[Zombie-Escape]\x01 Player \x04%N\x01 is first zombie! Apocalypse has started...", firstinfected);
+		CPrintToChatAll(" \x04[Zombie-Escape]\x01 %t", "first_infected", firstinfected);
 		KillTimer(H_FirstInfection);
 		H_FirstInfection = null;	
 	}
@@ -228,6 +259,22 @@ public Action Respawn(Handle timer, int client)
 			Call_PushCell(client);
 			Call_Finish();
 		}
+	}
+}
+
+public Action AntiDisconnect(Handle timer, int client)
+{
+	if(IsValidClient(client))
+	{
+		g_bAntiDisconnect[client] = false;
+	}
+}
+
+public Action EndCooldown(Handle timer, int client)
+{
+	if(IsValidClient(client))
+	{
+		g_hCooldown[client] = false;
 	}
 }
 
@@ -300,5 +347,68 @@ public Action Slowdown(Handle timer, int client)
 			SetEntPropFloat(client, Prop_Data, "m_flLaggedMovementValue", newspeed);
 			g_bOnFire[client] = false;
 		}
+	}
+}
+
+public Action PointsCheck(Handle timer)
+{
+	for (int i = 1; i <= MaxClients; i++)
+	{
+		if(IsValidClient(i))
+		{
+			Command_DataUpdate(i);
+		}
+	}
+}
+
+public Action CreateEvent_SmokeDetonate(Handle timer, any entity)
+{
+	if (!IsValidEdict(entity))
+	{
+		return Plugin_Stop;
+	}
+	
+	char g_szClassname[64];
+	GetEdictClassname(entity, g_szClassname, sizeof(g_szClassname));
+	if (!strcmp(g_szClassname, "smokegrenade_projectile", false))
+	{
+		float origin[3];
+		GetEntPropVector(entity, Prop_Send, "m_vecOrigin", origin);
+		int client = GetEntPropEnt(entity, Prop_Send, "m_hThrower");
+		EmitSoundToAll("ze_premium/ze-infectionnade.mp3", entity);
+		SmokeInfection(client, origin);
+		AcceptEntityInput(entity, "kill");
+	}
+	
+	return Plugin_Stop;
+}
+
+public Action CreateEvent_DecoyDetonate(Handle timer, any entity)
+{
+	if (!IsValidEdict(entity))
+	{
+		return Plugin_Stop;
+	}
+	
+	char g_szClassname[64];
+	GetEdictClassname(entity, g_szClassname, sizeof(g_szClassname));
+	if (!strcmp(g_szClassname, "decoy_projectile", false))
+	{
+		float origin[3];
+		GetEntPropVector(entity, Prop_Send, "m_vecOrigin", origin);
+		int client = GetEntPropEnt(entity, Prop_Send, "m_hThrower");
+		EmitSoundToAll("ze_premium/freeze.mp3", entity);
+		FlashFreeze(client, origin);
+		AcceptEntityInput(entity, "kill");
+	}
+	
+	return Plugin_Stop;
+}
+
+public Action Delete(Handle timer, any entity)
+{
+	if (IsValidEdict(entity))
+	{
+		AcceptEntityInput(entity, "kill");
 	}
 }

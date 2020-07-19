@@ -1,9 +1,23 @@
 #define FREEZE_SOUND "ze_premium/freeze.mp3"
 
-Handle H_FirstInfection;
+//GRENADES
+#define FragColor 	{255,75,75,255}
+#define FlashColor	{0,255,255,255}
+#define SmokeColor	{0,255,0,255}
+#define SMOKE 1
+int BeamSprite, GlowSprite;
+char g_iaGrenadeOffsets[] = {15, 17, 16, 14, 18, 17};
+
+//COKIES
+Handle H_hAntiDisconnect;
+
+//FORWARDS
 Handle gF_ClientInfected;
 Handle gF_ClientRespawned;
 Handle gF_ClientHumanPost;
+
+//TIMERS
+Handle H_FirstInfection;
 
 int g_iBeamSprite;
 int g_iHaloSprite;
@@ -40,10 +54,20 @@ ConVar g_cZEEvilClownSpeed;
 ConVar g_cZEEvilClownHP;
 ConVar g_cZEZombieRiots;
 ConVar g_cZEZombieShieldType;
+ConVar g_cZEHeGrenadeEffect;
+ConVar g_cZEFlashbangEffect;
+ConVar g_cZESmokeEffect;
+ConVar g_cZEInfnade;
+ConVar g_cZEInfnadeusages;
+ConVar g_cZEInfnadedistance;
+ConVar g_cZEFreezenadedistance;
+ConVar g_cZEInfectionBans;
+ConVar g_cZEInfectionTime;
+ConVar g_cZEInfectionBanPlayers;
 
-//Database g_hDatabase;
+Database g_hDatabase;
 
-//Handle g_hDataPackUser;
+Handle g_hDataPackUser;
 
 //MODELS
 char HUMANMODEL[128];
@@ -73,6 +97,7 @@ bool g_bIsNemesis[MAXPLAYERS + 1] = false;
 int i_pause[MAXPLAYERS + 1];
 bool g_bNotDied[MAXPLAYERS + 1];
 bool g_bNoRespawn[MAXPLAYERS + 1] = false;
+bool g_bAntiDisconnect[MAXPLAYERS + 1] = false;
 int i_Riotround;
 int i_SpecialRound;
 
@@ -85,9 +110,22 @@ int i_protection[MAXPLAYERS + 1];
 int i_Infection;
 bool g_bRoundStarted = false;
 bool g_bPause = false;
+int i_antidisconnect[MAXPLAYERS + 1];
+int i_respawn[MAXPLAYERS + 1];
+bool g_hCooldown[MAXPLAYERS + 1];
+
+int g_iSoundEnts[2048];
+int g_iNumSounds;
 
 //SHOP
 bool g_bFireHE[MAXPLAYERS + 1] = false;
 bool g_bOnFire[MAXPLAYERS + 1] = false;
 bool g_bFreezeFlash[MAXPLAYERS + 1] = false;
+bool g_bInfectNade[MAXPLAYERS + 1] = false;
 int spended[MAXPLAYERS + 1];
+int i_binfnade;
+
+//DATABASE
+int i_wins[MAXPLAYERS + 1];
+int i_infected[MAXPLAYERS + 1];
+int i_killedzm[MAXPLAYERS + 1];

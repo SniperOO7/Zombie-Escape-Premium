@@ -6,7 +6,7 @@ void openMenu(int client)
 	
 	menu.AddItem("menu1", "Weapons");
 	menu.AddItem("menu2", "Zombie/Human classes");
-	menu.AddItem("menu3", "Human Shop");
+	menu.AddItem("menu3", "Human/Zombie Shop");
 	if(IsClientAdmin(client) || IsClientLeader(client))
 	{
 		menu.AddItem("menu4", "Admin menu");
@@ -15,6 +15,7 @@ void openMenu(int client)
 	{
 		menu.AddItem("menu4", "Admin menu [NO ACCES]", ITEMDRAW_DISABLED);
 	}
+	menu.AddItem("menu5", ">Your stats<");
 	
 	menu.Display(client, MENU_TIME_FOREVER);
 }
@@ -38,7 +39,7 @@ public int mZeHandler(Menu menu, MenuAction action, int client, int index)
 					}
 					else
 					{
-						ReplyToCommand(client, " \x04[Zombie-Escape]\x01 You have to be a human");
+						CReplyToCommand(client, " \x04[ZE-Weapons]\x01 %t", "no_human");
 						openMenu(client);
 					}
 				}
@@ -56,6 +57,15 @@ public int mZeHandler(Menu menu, MenuAction action, int client, int index)
 					{
 						openAdmin(client);
 					}
+				}
+				else if (StrEqual(szItem, "menu5"))
+				{
+					char szSteamId[32], szQuery[512];
+					GetClientAuthId(client, AuthId_Engine, szSteamId, sizeof(szSteamId));
+					
+					g_hDatabase.Format(szQuery, sizeof(szQuery), "SELECT * FROM ze_premium_sql WHERE steamid='%s'", szSteamId);
+					
+					g_hDatabase.Query(szQueryCallback, szQuery, GetClientUserId(client));
 				}
 			}
 		}
@@ -143,13 +153,13 @@ public int mZeGunsHandler(Menu menu, MenuAction action, int client, int index)
 				{
 					if(g_bSamegun[client] == true)
 					{
-						PrintToChat(client, " \x04[ZE-Weapons]\x01 You chosen to \x07disable\x01 same guns every round");
+						CPrintToChat(client, " \x04[ZE-Weapons]\x01 %t", "samegun_false");
 						g_bSamegun[client] = false;
 						openWeapons(client);
 					}
 					else
 					{
-						PrintToChat(client, " \x04[ZE-Weapons]\x01 You chosen to \x04enable\x01 same guns every round");
+						CPrintToChat(client, " \x04[ZE-Weapons]\x01 %t", "samegun_true");
 						g_bSamegun[client] = true;
 						openWeapons(client);
 					}
@@ -192,36 +202,36 @@ public int mZeRifleGunsHandler(Menu menu, MenuAction action, int client, int ind
 				if (StrEqual(szItem, "menu1"))
 				{
 					Format(Primary_Gun[client], sizeof(Primary_Gun), "weapon_ak47");
-					PrintToChat(client, " \x04[ZE-Weapons]\x01 You chosen \x06%s \x01gun", Primary_Gun[client]);
-					PrintToChat(client, " \x04[ZE-Weapons]\x01 To get it, write in chat: \x06/get");
+					CPrintToChat(client, " \x04[ZE-Weapons]\x01 %t", "chosen_gun", Primary_Gun[client]);
+					CPrintToChat(client, " \x04[ZE-Weapons]\x01 %t", "get_the_gun");
 					openWeapons(client);
 				}
 				else if (StrEqual(szItem, "menu2"))
 				{
 					Format(Primary_Gun[client], sizeof(Primary_Gun), "weapon_m4a1");
-					PrintToChat(client, " \x04[ZE-Weapons]\x01 You chosen \x06%s \x01gun", Primary_Gun[client]);
-					PrintToChat(client, " \x04[ZE-Weapons]\x01 To get it, write in chat: \x06/get");
+					CPrintToChat(client, " \x04[ZE-Weapons]\x01 %t", "chosen_gun", Primary_Gun[client]);
+					CPrintToChat(client, " \x04[ZE-Weapons]\x01 %t", "get_the_gun");
 					openWeapons(client);
 				}
 				else if (StrEqual(szItem, "menu3"))
 				{
 					Format(Primary_Gun[client], sizeof(Primary_Gun), "weapon_m4a1_silencer");
-					PrintToChat(client, " \x04[ZE-Weapons]\x01 You chosen \x06%s \x01gun", Primary_Gun[client]);
-					PrintToChat(client, " \x04[ZE-Weapons]\x01 To get it, write in chat: \x06/get");
+					CPrintToChat(client, " \x04[ZE-Weapons]\x01 %t", "chosen_gun", Primary_Gun[client]);
+					CPrintToChat(client, " \x04[ZE-Weapons]\x01 %t", "get_the_gun");
 					openWeapons(client);
 				}
 				else if (StrEqual(szItem, "menu4"))
 				{
 					Format(Primary_Gun[client], sizeof(Primary_Gun), "weapon_aug");
-					PrintToChat(client, " \x04[ZE-Weapons]\x01 You chosen \x06%s \x01gun", Primary_Gun[client]);
-					PrintToChat(client, " \x04[ZE-Weapons]\x01 To get it, write in chat: \x06/get");
+					CPrintToChat(client, " \x04[ZE-Weapons]\x01 %t", "chosen_gun", Primary_Gun[client]);
+					CPrintToChat(client, " \x04[ZE-Weapons]\x01 %t", "get_the_gun");
 					openWeapons(client);
 				}
 				else if (StrEqual(szItem, "menu5"))
 				{
 					Format(Primary_Gun[client], sizeof(Primary_Gun), "weapon_sg556");
-					PrintToChat(client, " \x04[ZE-Weapons]\x01 You chosen \x06%s \x01gun", Primary_Gun[client]);
-					PrintToChat(client, " \x04[ZE-Weapons]\x01 To get it, write in chat: \x06/get");
+					CPrintToChat(client, " \x04[ZE-Weapons]\x01 %t", "chosen_gun", Primary_Gun[client]);
+					CPrintToChat(client, " \x04[ZE-Weapons]\x01 %t", "get_the_gun");
 					openWeapons(client);
 				}
 			}
@@ -258,36 +268,36 @@ public int mZeHeavyGunsHandler(Menu menu, MenuAction action, int client, int ind
 				if (StrEqual(szItem, "menu1"))
 				{
 					Format(Primary_Gun[client], sizeof(Primary_Gun), "weapon_m249");
-					PrintToChat(client, " \x04[ZE-Weapons]\x01 You chosen \x06%s \x01gun", Primary_Gun[client]);
-					PrintToChat(client, " \x04[ZE-Weapons]\x01 To get it, write in chat: \x06/get");
+					CPrintToChat(client, " \x04[ZE-Weapons]\x01 %t", "chosen_gun", Primary_Gun[client]);
+					CPrintToChat(client, " \x04[ZE-Weapons]\x01 %t", "get_the_gun");
 					openWeapons(client);
 				}
 				else if (StrEqual(szItem, "menu2"))
 				{
 					Format(Primary_Gun[client], sizeof(Primary_Gun), "weapon_negev");
-					PrintToChat(client, " \x04[ZE-Weapons]\x01 You chosen \x06%s \x01gun", Primary_Gun[client]);
-					PrintToChat(client, " \x04[ZE-Weapons]\x01 To get it, write in chat: \x06/get");
+					CPrintToChat(client, " \x04[ZE-Weapons]\x01 %t", "chosen_gun", Primary_Gun[client]);
+					CPrintToChat(client, " \x04[ZE-Weapons]\x01 %t", "get_the_gun");
 					openWeapons(client);
 				}
 				else if (StrEqual(szItem, "menu3"))
 				{
 					Format(Primary_Gun[client], sizeof(Primary_Gun), "weapon_nova");
-					PrintToChat(client, " \x04[ZE-Weapons]\x01 You chosen \x06%s \x01gun", Primary_Gun[client]);
-					PrintToChat(client, " \x04[ZE-Weapons]\x01 To get it, write in chat: \x06/get");
+					CPrintToChat(client, " \x04[ZE-Weapons]\x01 %t", "chosen_gun", Primary_Gun[client]);
+					CPrintToChat(client, " \x04[ZE-Weapons]\x01 %t", "get_the_gun");
 					openWeapons(client);
 				}
 				else if (StrEqual(szItem, "menu4"))
 				{
 					Format(Primary_Gun[client], sizeof(Primary_Gun), "weapon_xm1014");
-					PrintToChat(client, " \x04[ZE-Weapons]\x01 You chosen \x06%s \x01gun", Primary_Gun[client]);
-					PrintToChat(client, " \x04[ZE-Weapons]\x01 To get it, write in chat: \x06/get");
+					CPrintToChat(client, " \x04[ZE-Weapons]\x01 %t", "chosen_gun", Primary_Gun[client]);
+					CPrintToChat(client, " \x04[ZE-Weapons]\x01 %t", "get_the_gun");
 					openWeapons(client);
 				}
 				else if (StrEqual(szItem, "menu5"))
 				{
 					Format(Primary_Gun[client], sizeof(Primary_Gun), "weapon_sawedoff");
-					PrintToChat(client, " \x04[ZE-Weapons]\x01 You chosen \x06%s \x01gun", Primary_Gun[client]);
-					PrintToChat(client, " \x04[ZE-Weapons]\x01 To get it, write in chat: \x06/get");
+					CPrintToChat(client, " \x04[ZE-Weapons]\x01 %t", "chosen_gun", Primary_Gun[client]);
+					CPrintToChat(client, " \x04[ZE-Weapons]\x01 %t", "get_the_gun");
 					openWeapons(client);
 				}
 			}
@@ -324,36 +334,36 @@ public int mZeSMGGunsHandler(Menu menu, MenuAction action, int client, int index
 				if (StrEqual(szItem, "menu1"))
 				{
 					Format(Primary_Gun[client], sizeof(Primary_Gun), "weapon_p90");
-					PrintToChat(client, " \x04[ZE-Weapons]\x01 You chosen \x06%s \x01gun", Primary_Gun[client]);
-					PrintToChat(client, " \x04[ZE-Weapons]\x01 To get it, write in chat: \x06/get");
+					CPrintToChat(client, " \x04[ZE-Weapons]\x01 %t", "chosen_gun", Primary_Gun[client]);
+					CPrintToChat(client, " \x04[ZE-Weapons]\x01 %t", "get_the_gun");
 					openWeapons(client);
 				}
 				else if (StrEqual(szItem, "menu2"))
 				{
 					Format(Primary_Gun[client], sizeof(Primary_Gun), "weapon_bizon");
-					PrintToChat(client, " \x04[ZE-Weapons]\x01 You chosen \x06%s \x01gun", Primary_Gun[client]);
-					PrintToChat(client, " \x04[ZE-Weapons]\x01 To get it, write in chat: \x06/get");
+					CPrintToChat(client, " \x04[ZE-Weapons]\x01 %t", "chosen_gun", Primary_Gun[client]);
+					CPrintToChat(client, " \x04[ZE-Weapons]\x01 %t", "get_the_gun");
 					openWeapons(client);
 				}
 				else if (StrEqual(szItem, "menu3"))
 				{
 					Format(Primary_Gun[client], sizeof(Primary_Gun), "weapon_mp7");
-					PrintToChat(client, " \x04[ZE-Weapons]\x01 You chosen \x06%s \x01gun", Primary_Gun[client]);
-					PrintToChat(client, " \x04[ZE-Weapons]\x01 To get it, write in chat: \x06/get");
+					CPrintToChat(client, " \x04[ZE-Weapons]\x01 %t", "chosen_gun", Primary_Gun[client]);
+					CPrintToChat(client, " \x04[ZE-Weapons]\x01 %t", "get_the_gun");
 					openWeapons(client);
 				}
 				else if (StrEqual(szItem, "menu4"))
 				{
 					Format(Primary_Gun[client], sizeof(Primary_Gun), "weapon_mp5sd");
-					PrintToChat(client, " \x04[ZE-Weapons]\x01 You chosen \x06%s \x01gun", Primary_Gun[client]);
-					PrintToChat(client, " \x04[ZE-Weapons]\x01 To get it, write in chat: \x06/get");
+					CPrintToChat(client, " \x04[ZE-Weapons]\x01 %t", "chosen_gun", Primary_Gun[client]);
+					CPrintToChat(client, " \x04[ZE-Weapons]\x01 %t", "get_the_gun");
 					openWeapons(client);
 				}
 				else if (StrEqual(szItem, "menu5"))
 				{
 					Format(Primary_Gun[client], sizeof(Primary_Gun), "weapon_ump45");
-					PrintToChat(client, " \x04[ZE-Weapons]\x01 You chosen \x06%s \x01gun", Primary_Gun[client]);
-					PrintToChat(client, " \x04[ZE-Weapons]\x01 To get it, write in chat: \x06/get");
+					CPrintToChat(client, " \x04[ZE-Weapons]\x01 %t", "chosen_gun", Primary_Gun[client]);
+					CPrintToChat(client, " \x04[ZE-Weapons]\x01 %t", "get_the_gun");
 					openWeapons(client);
 				}
 			}
@@ -390,36 +400,36 @@ public int mZePistolGunsHandler(Menu menu, MenuAction action, int client, int in
 				if (StrEqual(szItem, "menu1"))
 				{
 					Format(Secondary_Gun[client], sizeof(Secondary_Gun), "weapon_deagle");
-					PrintToChat(client, " \x04[ZE-Weapons]\x01 You chosen \x06%s \x01gun", Secondary_Gun[client]);
-					PrintToChat(client, " \x04[ZE-Weapons]\x01 To get it, write in chat: \x06/get");
+					CPrintToChat(client, " \x04[ZE-Weapons]\x01 %t", "chosen_gun", Secondary_Gun[client]);
+					CPrintToChat(client, " \x04[ZE-Weapons]\x01 %t", "get_the_gun");
 					openWeapons(client);
 				}
 				else if (StrEqual(szItem, "menu2"))
 				{
 					Format(Secondary_Gun[client], sizeof(Secondary_Gun), "weapon_elite");
-					PrintToChat(client, " \x04[ZE-Weapons]\x01 You chosen \x06%s \x01gun", Secondary_Gun[client]);
-					PrintToChat(client, " \x04[ZE-Weapons]\x01 To get it, write in chat: \x06/get");
+					CPrintToChat(client, " \x04[ZE-Weapons]\x01 %t", "chosen_gun", Secondary_Gun[client]);
+					CPrintToChat(client, " \x04[ZE-Weapons]\x01 %t", "get_the_gun");
 					openWeapons(client);
 				}
 				else if (StrEqual(szItem, "menu3"))
 				{
 					Format(Secondary_Gun[client], sizeof(Secondary_Gun), "weapon_tec9");
-					PrintToChat(client, " \x04[ZE-Weapons]\x01 You chosen \x06%s \x01gun", Secondary_Gun[client]);
-					PrintToChat(client, " \x04[ZE-Weapons]\x01 To get it, write in chat: \x06/get");
+					CPrintToChat(client, " \x04[ZE-Weapons]\x01 %t", "chosen_gun", Secondary_Gun[client]);
+					CPrintToChat(client, " \x04[ZE-Weapons]\x01 %t", "get_the_gun");
 					openWeapons(client);
 				}
 				else if (StrEqual(szItem, "menu4"))
 				{
 					Format(Secondary_Gun[client], sizeof(Secondary_Gun), "weapon_revolver");
-					PrintToChat(client, " \x04[ZE-Weapons]\x01 You chosen \x06%s \x01gun", Secondary_Gun[client]);
-					PrintToChat(client, " \x04[ZE-Weapons]\x01 To get it, write in chat: \x06/get");
+					CPrintToChat(client, " \x04[ZE-Weapons]\x01 %t", "chosen_gun", Secondary_Gun[client]);
+					CPrintToChat(client, " \x04[ZE-Weapons]\x01 %t", "get_the_gun");
 					openWeapons(client);
 				}
 				else if (StrEqual(szItem, "menu5"))
 				{
 					Format(Secondary_Gun[client], sizeof(Secondary_Gun), "weapon_p250");
-					PrintToChat(client, " \x04[ZE-Weapons]\x01 You chosen \x06%s \x01gun", Secondary_Gun[client]);
-					PrintToChat(client, " \x04[ZE-Weapons]\x01 To get it, write in chat: \x06/get");
+					CPrintToChat(client, " \x04[ZE-Weapons]\x01 %t", "chosen_gun", Secondary_Gun[client]);
+					CPrintToChat(client, " \x04[ZE-Weapons]\x01 %t", "get_the_gun");
 					openWeapons(client);
 				}
 			}
@@ -496,25 +506,31 @@ public int mZeHumanClassHandler(Menu menu, MenuAction action, int client, int in
 				char szItem[32];
 				menu.GetItem(index, szItem, sizeof(szItem));
 				
+				char szClass[64];
+				
 				if (StrEqual(szItem, "menu1"))
 				{ 
 					i_hclass[client] = 1;
-					PrintToChat(client, " \x04[ZE-Class]\x01 You chosen \x04Bomber-Man \x01class, you will get it after you respawn");
+					Format(szClass, sizeof(szClass), "Bomber-Man");	
+					CPrintToChat(client, " \x04[ZE-Class]\x01 %t", "chosen_class", szClass);
 				}
 				else if (StrEqual(szItem, "menu2"))
 				{
 					i_hclass[client] = 2;
-					PrintToChat(client, " \x04[ZE-Class]\x01 You chosen \x04Healer \x01class, you will get it after you respawn");
+					Format(szClass, sizeof(szClass), "Healer");	
+					CPrintToChat(client, " \x04[ZE-Class]\x01 %t", "chosen_class", szClass);
 				}
 				else if (StrEqual(szItem, "menu3"))
 				{
 					i_hclass[client] = 3;
-					PrintToChat(client, " \x04[ZE-Class]\x01 You chosen \x04Heavy-man \x01class, you will get it after you respawn");
+					Format(szClass, sizeof(szClass), "Heavy-Man");	
+					CPrintToChat(client, " \x04[ZE-Class]\x01 %t", "chosen_class", szClass);
 				}
 				else if (StrEqual(szItem, "menu4"))
 				{
 					i_hclass[client] = 4;
-					PrintToChat(client, " \x04[ZE-Class]\x01 You chosen \x04Big Boss \x01class, you will get it after you respawn");
+					Format(szClass, sizeof(szClass), "Big Boss");	
+					CPrintToChat(client, " \x04[ZE-Class]\x01 %t", "chosen_class", szClass);
 				}
 			}
 		}
@@ -553,25 +569,31 @@ public int mZeZombieClassHandler(Menu menu, MenuAction action, int client, int i
 				char szItem[32];
 				menu.GetItem(index, szItem, sizeof(szItem));
 				
+				char szClass[64];
+				
 				if (StrEqual(szItem, "menu1"))
 				{ 
 					i_zclass[client] = 1;
-					PrintToChat(client, " \x04[ZE-Class]\x01 You chosen \x04Runner \x01class, you will get it after you respawn");
+					Format(szClass, sizeof(szClass), "Runner");	
+					CPrintToChat(client, " \x04[ZE-Class]\x01 %t", "chosen_class", szClass);
 				}
 				else if (StrEqual(szItem, "menu2"))
 				{
 					i_zclass[client] = 2;
-					PrintToChat(client, " \x04[ZE-Class]\x01 You chosen \x04Tank \x01class, you will get it after you respawn");
+					Format(szClass, sizeof(szClass), "Tank");	
+					CPrintToChat(client, " \x04[ZE-Class]\x01 %t", "chosen_class", szClass);
 				}
 				else if (StrEqual(szItem, "menu3"))
 				{
 					i_zclass[client] = 3;
-					PrintToChat(client, " \x04[ZE-Class]\x01 You chosen \x04Evil Clown \x01class, you will get it after you respawn");
+					Format(szClass, sizeof(szClass), "Gravity");	
+					CPrintToChat(client, " \x04[ZE-Class]\x01 %t", "chosen_class", szClass);
 				}
 				else if (StrEqual(szItem, "menu4"))
 				{
 					i_zclass[client] = 4;
-					PrintToChat(client, " \x04[ZE-Class]\x01 You chosen \x04Evil Clown \x01class, you will get it after you respawn");
+					Format(szClass, sizeof(szClass), "Evil Clown");	
+					CPrintToChat(client, " \x04[ZE-Class]\x01 %t", "chosen_class", szClass);
 				}
 			}
 		}
@@ -587,14 +609,16 @@ void openShop(int client)
 	
 	menu.SetTitle("[Shop] Main Menu:");
 	
-	Format(text, sizeof(text), "Health-Shot [%i $]", g_cZEHealthShot.IntValue);
+	Format(text, sizeof(text), "Health-Shot [%i $] [HUMAN]", g_cZEHealthShot.IntValue);
 	menu.AddItem("menu1", text);
-	Format(text, sizeof(text), "He Grenade [%i $]", g_cZEHeNade.IntValue);
+	Format(text, sizeof(text), "Fire Grenade [%i $] [HUMAN]", g_cZEHeNade.IntValue);
 	menu.AddItem("menu2", text);
-	Format(text, sizeof(text), "Flash Grenade [%i $]", g_cZEFlashNade.IntValue);
+	Format(text, sizeof(text), "Freeze Grenade [%i $] [HUMAN]", g_cZEFlashNade.IntValue);
 	menu.AddItem("menu3", text);
-	Format(text, sizeof(text), "Molotov [%i $]", g_cZEMolotov.IntValue);
+	Format(text, sizeof(text), "Molotov [%i $] [HUMAN]", g_cZEMolotov.IntValue);
 	menu.AddItem("menu4", text);
+	Format(text, sizeof(text), "Infetion Grenade [%i $] [ZOMBIE]", g_cZEInfnade.IntValue);
+	menu.AddItem("menu5", text);
 	
 	menu.Display(client, MENU_TIME_FOREVER);
 }
@@ -607,12 +631,14 @@ public int mZeShopHandler(Menu menu, MenuAction action, int client, int index)
 		{
 			if (IsValidClient(client))
 			{
+				int money = GetEntProp(client, Prop_Send, "m_iAccount");
+				char szItem[32];
+				menu.GetItem(index, szItem, sizeof(szItem));
+				
+				char szBoughtItem[64];
+				
 				if(GetClientTeam(client) == CS_TEAM_CT || i_Infection > 0 && IsPlayerAlive(client))
-				{
-					int money = GetEntProp(client, Prop_Send, "m_iAccount");
-					char szItem[32];
-					menu.GetItem(index, szItem, sizeof(szItem));
-					
+				{	
 					if (StrEqual(szItem, "menu1"))
 					{
 						if(money >= g_cZEHealthShot.IntValue)
@@ -620,11 +646,12 @@ public int mZeShopHandler(Menu menu, MenuAction action, int client, int index)
 							GivePlayerItem(client, "weapon_healthshot");
 							SetEntProp(client, Prop_Send, "m_iAccount", money - g_cZEHealthShot.IntValue);
 							spended[client] += g_cZEHealthShot.IntValue;
-							PrintToChat(client, " \x04[ZE-Shop]\x01 You bought \x06healthshot");
+							Format(szBoughtItem, sizeof(szBoughtItem), "HealthShot");	
+							CPrintToChat(client, " \x04[ZE-Shop]\x01 %t", "bought_item", szBoughtItem);
 						}
 						else
 						{
-							ReplyToCommand(client, " \x04[ZE-Shop]\x01 You don't have enough money!");
+							CReplyToCommand(client, " \x04[ZE-Shop]\x01 %t", "not_enough_money");
 							openShop(client);
 						}
 					}
@@ -636,11 +663,12 @@ public int mZeShopHandler(Menu menu, MenuAction action, int client, int index)
 							g_bFireHE[client] = true;
 							SetEntProp(client, Prop_Send, "m_iAccount", money - g_cZEHeNade.IntValue);
 							spended[client] += g_cZEHeNade.IntValue;
-							PrintToChat(client, " \x04[ZE-Shop]\x01 You bought \x06he grenade");
+							Format(szBoughtItem, sizeof(szBoughtItem), "Fire Grenade");	
+							CPrintToChat(client, " \x04[ZE-Shop]\x01 %t", "bought_item", szBoughtItem);
 						}
 						else
 						{
-							ReplyToCommand(client, " \x04[ZE-Shop]\x01 You don't have enough money!");
+							CReplyToCommand(client, " \x04[ZE-Shop]\x01 %t", "not_enough_money");
 							openShop(client);
 						}
 					}
@@ -648,15 +676,16 @@ public int mZeShopHandler(Menu menu, MenuAction action, int client, int index)
 					{
 						if(money >= g_cZEFlashNade.IntValue)
 						{
-							GivePlayerItem(client, "weapon_flashbang");
+							GivePlayerItem(client, "weapon_decoy");
 							g_bFreezeFlash[client] = true;
 							SetEntProp(client, Prop_Send, "m_iAccount", money - g_cZEFlashNade.IntValue);
 							spended[client] += g_cZEFlashNade.IntValue;
-							PrintToChat(client, " \x04[ZE-Shop]\x01 You bought \x06flash grenade");
+							Format(szBoughtItem, sizeof(szBoughtItem), "Freeze Grenade");	
+							CPrintToChat(client, " \x04[ZE-Shop]\x01 %t", "bought_item", szBoughtItem);
 						}
 						else
 						{
-							ReplyToCommand(client, " \x04[ZE-Shop]\x01 You don't have enough money!");
+							CReplyToCommand(client, " \x04[ZE-Shop]\x01 %t", "not_enough_money");
 							openShop(client);
 						}
 					}
@@ -667,19 +696,49 @@ public int mZeShopHandler(Menu menu, MenuAction action, int client, int index)
 							GivePlayerItem(client, "weapon_molotov");
 							SetEntProp(client, Prop_Send, "m_iAccount", money - g_cZEMolotov.IntValue);
 							spended[client] += g_cZEMolotov.IntValue;
-							PrintToChat(client, " \x04[ZE-Shop]\x01 You bought \x06molotov");
+							Format(szBoughtItem, sizeof(szBoughtItem), "Molotov");	
+							CPrintToChat(client, " \x04[ZE-Shop]\x01 %t", "bought_item", szBoughtItem);
 						}
 						else
 						{
-							ReplyToCommand(client, " \x04[ZE-Shop]\x01 You don't have enough money!");
+							CReplyToCommand(client, " \x04[ZE-Shop]\x01 %t", "not_enough_money");
 							openShop(client);
 						}
 					}
+					else if (StrEqual(szItem, "menu5"))
+					{
+						CReplyToCommand(client, " \x04[ZE-Shop]\x01 %t", "no_zombie");
+						openShop(client);
+					}
 				}
-				else
+				else if(g_bInfected[client] == true)
 				{
-					ReplyToCommand(client, " \x04[ZE-Shop]\x01 You have to be a human and alive!");
-					openShop(client);
+					if (StrEqual(szItem, "menu5"))
+					{
+						if(money >= g_cZEInfnade.IntValue)
+						{
+							if(g_cZEInfnadeusages.IntValue > i_binfnade)
+							{
+								GivePlayerItem(client, "weapon_smokegrenade");
+								g_bInfectNade[client] = true;
+								SetEntProp(client, Prop_Send, "m_iAccount", money - g_cZEInfnade.IntValue);
+								spended[client] += g_cZEHealthShot.IntValue;
+								Format(szBoughtItem, sizeof(szBoughtItem), "Infection Grenade");	
+								CPrintToChat(client, " \x04[ZE-Shop]\x01 %t", "bought_item", szBoughtItem);
+								i_binfnade++;
+							}
+							else
+							{
+								CReplyToCommand(client, " \x04[ZE-Shop]\x01 %t", "not_enough_infection_nades");
+								openShop(client);
+							}
+						}
+						else
+						{
+							CReplyToCommand(client, " \x04[ZE-Shop]\x01 %t", "not_enough_money");
+							openShop(client);
+						}
+					}
 				}
 			}
 		}
@@ -704,13 +763,15 @@ void openAdmin(int client)
 		{
 			menu.AddItem("menu2", "Pause infection timer");
 		}
+		menu.AddItem("menu3", "Infection Ban");
 	}
 	else
 	{
 		menu.AddItem("menu1", "Change team", ITEMDRAW_DISABLED);
 		menu.AddItem("menu2", "Pause infection timer", ITEMDRAW_DISABLED);
+		menu.AddItem("menu3", "Infection Ban", ITEMDRAW_DISABLED);
 	}
-	menu.AddItem("menu3", "Leader");
+	menu.AddItem("menu4", "Leader");
 	
 	menu.Display(client, MENU_TIME_FOREVER);
 }
@@ -737,23 +798,27 @@ public int mZeAdminHandler(Menu menu, MenuAction action, int client, int index)
 						if(g_bPause == false)
 						{
 							g_bPause = true;
-							PrintToChatAll(" \x04[ZE-Admin]\x01 Admin\x06 %N\x01 paused infection timer!", client);
+							CPrintToChatAll(" \x04[ZE-Admin]\x01 %t", "infection_timer_paused", client);
 							openAdmin(client);
 						}
 						else
 						{
 							g_bPause = false;
-							PrintToChatAll(" \x04[ZE-Admin]\x01 Admin\x06 %N\x01 unpased infection timer!", client);
+							CPrintToChatAll(" \x04[ZE-Admin]\x01 %t", "infection_timer_unpaused", client);
 							openAdmin(client);
 						}
 					}
 					else
 					{
-						ReplyToCommand(client, " \x04[ZE-Admin]\x01 Infection timer expired, wait for next round!");
+						CReplyToCommand(client, " \x04[ZE-Admin]\x01 %t", "nextround_infection_timer");
 						openAdmin(client);
 					}
 				}
 				else if (StrEqual(szItem, "menu3"))
+				{
+					openInfectionBan(client);
+				}
+				else if (StrEqual(szItem, "menu4"))
 				{
 					openLeader(client);
 				}
@@ -813,7 +878,7 @@ public int mZeLeaderHandler(Menu menu, MenuAction action, int client, int index)
 						{
 							KillTimer(H_Beacon[client]);
 							H_Beacon[client] = null;	
-							PrintToChat(client, " \x04[ZE-Leader]\x01 You turned \x07off \x01beacon");
+							CPrintToChat(client, " \x04[ZE-Leader]\x01 %t", "beacon_off");
 							openLeader(client);
 						}
 					}
@@ -821,7 +886,7 @@ public int mZeLeaderHandler(Menu menu, MenuAction action, int client, int index)
 					{
 						g_bBeacon[client] = true;
 						H_Beacon[client] = CreateTimer(0.2, Timer_Beacon, client, TIMER_REPEAT);
-						PrintToChat(client, " \x04[ZE-Leader]\x01 You turned \x04on \x01beacon");
+						CPrintToChat(client, " \x04[ZE-Leader]\x01 %t", "beacon_on");
 						openLeader(client);
 					}
 				}
@@ -884,7 +949,7 @@ public int mZeLeaderSpritesHandler(Menu menu, MenuAction action, int client, int
 					RemoveMarker(client);
 					markerEntities[client] = SpawnMarker(client, DEFEND);
 					g_bMarker = true;
-					PrintToChat(client, " \x04[ZE-Leader]\x01 You \x04spawned \x01DEFEND marker");
+					CPrintToChat(client, " \x04[ZE-Leader]\x01 %t", "defend_marker_spawned");
 					openSpritesMarkers(client);
 				}
 				else if (StrEqual(szItem, "menu2"))
@@ -892,7 +957,7 @@ public int mZeLeaderSpritesHandler(Menu menu, MenuAction action, int client, int
 					g_bMarker = false;
 					RemoveMarker(client);
 					openSpritesMarkers(client);
-					PrintToChat(client, " \x04[ZE-Leader]\x01 You \x07removed \x01DEFEND marker");
+					CPrintToChat(client, " \x04[ZE-Leader]\x01 %t", "defend_marker_removed");
 				}
 				else if (StrEqual(szItem, "menu3"))
 				{
@@ -901,7 +966,7 @@ public int mZeLeaderSpritesHandler(Menu menu, MenuAction action, int client, int
 					typeofsprite[client] = 1;
 					EmitSoundToAll("ze_premium/ze-defend.mp3", client);
 					openSpritesMarkers(client);
-					PrintToChat(client, " \x04[ZE-Leader]\x01 You \x04chosen \x01DEFEND sprite");
+					CPrintToChat(client, " \x04[ZE-Leader]\x01 %t", "chosen_defend_sprite");
 				}
 				else if (StrEqual(szItem, "menu4"))
 				{
@@ -910,14 +975,14 @@ public int mZeLeaderSpritesHandler(Menu menu, MenuAction action, int client, int
 					typeofsprite[client] = 2;
 					EmitSoundToAll("ze_premium/ze-folowme.mp3", client);
 					openSpritesMarkers(client);
-					PrintToChat(client, " \x04[ZE-Leader]\x01 You \x04chosen \x01FOLLOW-ME sprite");
+					CPrintToChat(client, " \x04[ZE-Leader]\x01 %t", "chosen_follow_sprite");
 				}
 				else if (StrEqual(szItem, "menu5"))
 				{
 					RemoveSprite(client);
 					typeofsprite[client] = 0;
 					openSpritesMarkers(client);
-					PrintToChat(client, " \x04[ZE-Leader]\x01 You \x07removed \x01 your sprite");
+					CPrintToChat(client, " \x04[ZE-Leader]\x01 %t", "sprite_removed");
 				}
 			}
 		}
@@ -978,9 +1043,11 @@ public int mRoundBanHandler(Menu menu, MenuAction action, int client, int index)
 				{
 					if(GetClientTeam(user) == CS_TEAM_CT)
 					{
-						PrintToChatAll(" \x04[ZE-Admin]\x01 Player \x04%N\x01 was swaped to \x07ZOMBIES\x01 by \x06%N\x01 admin!", user, client);
+						CPrintToChatAll(" \x04[ZE-Admin]\x01 %t", "swaped_to_zombies", user, client);
 						CS_SwitchTeam(user, CS_TEAM_T);
 						g_bInfected[user] = true;
+						RemoveGuns(user);
+						DisableSpells(user);
 						SetEntityModel(user, ZOMBIEMODEL);
 						SetEntityHealth(user, g_cZEZombieHP.IntValue);
 						SetEntPropFloat(user, Prop_Data, "m_flLaggedMovementValue", g_cZEZombieSpeed.FloatValue);
@@ -991,9 +1058,10 @@ public int mRoundBanHandler(Menu menu, MenuAction action, int client, int index)
 					}
 					else
 					{
-						PrintToChatAll(" \x04[ZE-Admin]\x01 Player \x04%N\x01 was swaped to \x0BHUMANS\x01 by \x06%N\x01 admin!", user, client);
+						CPrintToChatAll(" \x04[ZE-Admin]\x01 %t", "swaped_to_humans", user, client);
 						CS_SwitchTeam(user, CS_TEAM_CT);
 						g_bInfected[user] = false;
+						DisableSpells(user);
 						SetEntityModel(user, HUMANMODEL);
 						SetEntityHealth(user, g_cZEHumanHP.IntValue);
 						SetEntPropFloat(user, Prop_Data, "m_flLaggedMovementValue", 1.0);
@@ -1019,7 +1087,7 @@ void openChooseLeader(int client)
 	
 	Menu menu = new Menu(mLeaderChooseHandler);
 	
-	menu.SetTitle("[Change Team] Choose player:");
+	menu.SetTitle("[Leader] Choose player:");
 	
 	int iValidCount = 0;
 	for (int i = 1; i <= MaxClients; i++)
@@ -1077,16 +1145,16 @@ public int mLeaderChooseHandler(Menu menu, MenuAction action, int client, int in
 								if(g_bIsLeader[i] == true)
 								{
 									g_bIsLeader[i] = false;
-									PrintToChat(i, " \x04[ZE-Leader]\x01 You was \x07removed\x01 from \x06LEADER\x01 position!");
+									CPrintToChat(i, " \x04[ZE-Leader]\x01 %t", "removed_from_leader");
 								}
 							}
 						}
-						PrintToChatAll(" \x04[ZE-Leader]\x01 Player \x04%N\x01 is new \x06LEADER\x01!", user);
+						CPrintToChatAll(" \x04[ZE-Leader]\x01 %t", "new_leader", user);
 						g_bIsLeader[user] = true;
 					}
 					else
 					{
-						ReplyToCommand(client, " \x04[ZE-Leader]\x01 This player is dead or not human!");
+						CReplyToCommand(client, " \x04[ZE-Leader]\x01 %t", "player_is_dead");
 						openChooseLeader(client);
 					}
 				}
@@ -1095,6 +1163,143 @@ public int mLeaderChooseHandler(Menu menu, MenuAction action, int client, int in
 		case MenuAction_End:
 		{
 			delete menu;
+		}
+	}
+}
+
+void openInfectionBan(int client)
+{
+	char info1[255];
+	
+	Menu menu = new Menu(mInfectionChooseHandler);
+	
+	menu.SetTitle("[Infection Ban] Choose player:");
+	
+	int iValidCount = 0;
+	for (int i = 1; i <= MaxClients; i++)
+	{
+		if (IsValidClient(i))
+		{
+			char userid[11];
+			char username[MAX_NAME_LENGTH];
+			IntToString(GetClientUserId(i), userid, sizeof(userid));
+			char sBuffer[12];
+			GetClientCookie(i, H_hAntiDisconnect, sBuffer, sizeof(sBuffer));
+			i_antidisconnect[i] = StringToInt(sBuffer);
+			Format(username, sizeof(username), "%N [%i]", i, i_antidisconnect[i]);
+			menu.AddItem(userid, username);
+			iValidCount++;
+		}
+	}
+
+	if (iValidCount == 0)
+	{
+		Format(info1, sizeof(info1), "NO PLAYERS", client);
+		menu.AddItem("", info1, ITEMDRAW_DISABLED);
+	}
+
+	menu.Display(client, MENU_TIME_FOREVER);
+}
+
+public int mInfectionChooseHandler(Menu menu, MenuAction action, int client, int index)
+{
+	switch (action)
+	{
+		case MenuAction_Select:
+		{
+			if (IsValidClient(client))
+			{	
+				char name[32];
+				menu.GetItem(index, name, sizeof(name));
+				int user = GetClientOfUserId(StringToInt(name));
+				
+				if(IsValidClient(user))
+				{
+					g_hDataPackUser = CreateDataPack();
+					WritePackCell(g_hDataPackUser, user);
+					openInfectionLong(client);
+				}
+			}
+		}
+		case MenuAction_End:
+		{
+			delete menu;
+		}
+	}
+}
+
+void openInfectionLong(int client)
+{
+	Menu menu = new Menu(mZeInfectionLongHandler);
+	
+	menu.SetTitle("[Infection Ban] How long?");
+	
+	menu.AddItem("menu1", "2 rounds");
+	menu.AddItem("menu2", "5 rounds");
+	menu.AddItem("menu3", "10 rounds");
+	menu.AddItem("menu4", "[Remove ban]");
+	
+	menu.Display(client, MENU_TIME_FOREVER);
+}
+
+public int mZeInfectionLongHandler(Menu menu, MenuAction action, int client, int index)
+{
+	switch (action)
+	{
+		case MenuAction_Select:
+		{
+			if (IsValidClient(client))
+			{
+				char szItem[32];
+				menu.GetItem(index, szItem, sizeof(szItem));
+				
+				ResetPack(g_hDataPackUser);
+				int user = ReadPackCell(g_hDataPackUser);
+				int ban;
+				
+				if (StrEqual(szItem, "menu1"))
+				{
+					char sBuffer[12];
+					GetClientCookie(user, H_hAntiDisconnect, sBuffer, sizeof(sBuffer));
+					int amout = StringToInt(sBuffer);
+					ban = 2 + amout;
+					char defamout[16];
+					Format(defamout, sizeof(defamout), "%i", ban);
+					SetClientCookie(user, H_hAntiDisconnect, defamout);
+					CPrintToChatAll(" \x04[ZE-Admin]\x01 %t", "infection_ban", user, ban);
+					openInfectionBan(client);
+				}
+				else if (StrEqual(szItem, "menu2"))
+				{
+					char sBuffer[12];
+					GetClientCookie(user, H_hAntiDisconnect, sBuffer, sizeof(sBuffer));
+					int amout = StringToInt(sBuffer);
+					ban = 5 + amout;
+					char defamout[16];
+					Format(defamout, sizeof(defamout), "%i", ban);
+					SetClientCookie(user, H_hAntiDisconnect, defamout);
+					CPrintToChatAll(" \x04[ZE-Admin]\x01 %t", "infection_ban", user, ban);
+					openInfectionBan(client);
+				}
+				else if (StrEqual(szItem, "menu3"))
+				{
+					char sBuffer[12];
+					GetClientCookie(user, H_hAntiDisconnect, sBuffer, sizeof(sBuffer));
+					int amout = StringToInt(sBuffer);
+					ban = 10 + amout;
+					char defamout[16];
+					Format(defamout, sizeof(defamout), "%i", ban);
+					SetClientCookie(user, H_hAntiDisconnect, defamout);
+					CPrintToChatAll(" \x04[ZE-Admin]\x01 %t", "infection_ban", user, ban);
+					openInfectionBan(client);
+				}
+				else if (StrEqual(szItem, "menu4"))
+				{
+					SetClientCookie(user, H_hAntiDisconnect, "0");
+					CPrintToChatAll(" \x04[ZE-Admin]\x01 %t", "infection_unban", user);
+					openInfectionBan(client);
+				}
+			}
 		}
 	}
 }
