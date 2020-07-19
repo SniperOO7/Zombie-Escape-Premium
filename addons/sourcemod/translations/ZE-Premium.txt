@@ -1,0 +1,220 @@
+"Phrases"
+{
+	"no_human"
+	{
+		"en"		"You have to be a human!"
+	}
+	
+	"player_respawned"
+	{
+		"en"		"You was respawned!"
+	}
+
+	"zombie_respawned"
+	{
+		"#format"	"{1:i}"
+		"en"		"You was respawned, you have {green}{1}{default} uses left!"
+	}
+
+	"no_leader"
+	{
+		"en"		"You are not leader!"
+	}
+	
+	"chosen_gun"
+	{
+		"#format"	"{1:s}"
+		"en"		"You chosen {green}{1}{default} gun!"
+	}
+	
+	"get_the_gun"
+	{
+		"en"		"To get it, write in chat: {green}/get"
+	}
+	
+	"gun_uses_left"
+	{
+		"#format"	"{1:i}"
+		"en"		"You got your {green}chosen guns{default}, you have {purple}{1}{default} uses left!"
+	}
+	
+	"maxium_usages_gunmenu"
+	{
+		"en"		"You have maxium usage of weapon menu!"
+	}
+	
+	"choose_gun_first"
+	{
+		"en"		"Choose some guns first!"
+	}
+
+	"infected_disconnected"
+	{
+		"#format"	"{1:N}, {2:i}"
+		"en"		"Infected zombie {green}{1}{default} has disconnect from server, he recived punishment on {purple}{2}{default} rounds!"
+	}
+	
+	"samegun_false"
+	{
+		"en"		"You chosen to {green}disable{default} same guns every round!"
+	}
+	
+	"samegun_true"
+	{
+		"en"		"You chosen to {green}enable{default} same guns every round!"
+	}
+	
+	"chosen_class"
+	{
+		"#format"	"{1:s}"
+		"en"		"You chosen {green}{1}{default} class, you will get it after you respawn"
+	}
+	
+	"chosen_class"
+	{
+		"#format"	"{1:s}"
+		"en"		"You chosen {green}{1}{default} class, you will get it after you respawn"
+	}
+	
+	"bought_item"
+	{
+		"#format"	"{1:s}"
+		"en"		"You bought {green}{1}{default} from shop"
+	}
+	
+	"not_enough_money"
+	{
+		"en"		"You don't have enough money!"
+	}
+	
+	"no_zombie"
+	{
+		"en"		"You have to be a zombie!"
+	}
+	
+	"not_enough_infection_nades"
+	{
+		"en"		"You can't buy infection nade, because left 0 infection nades!"
+	}
+	
+	"infection_timer_paused"
+	{
+		"#format"	"{1:N}"
+		"en"		"Admin {green}{1}{default} paused infection timer!"
+	}
+	
+	"infection_timer_unpaused"
+	{
+		"#format"	"{1:N}"
+		"en"		"Admin {green}{1}{default} unpaused infection timer!"
+	}
+	
+	"nextround_infection_timer"
+	{
+		"en"		"Infection timer expired, wait for next round!"
+	}
+	
+	"beacon_on"
+	{
+		"en"		"You turned {green}on{default} beacon!"
+	}
+	
+	"beacon_off"
+	{
+		"en"		"You turned {green}off{default} beacon!"
+	}
+	
+	"defend_marker_spawned"
+	{
+		"en"		"You spawned {green}defend{default} marker!"
+	}
+	
+	"defend_marker_removed"
+	{
+		"en"		"You removed {green}defend{default} marker!"
+	}
+	
+	"chosen_defend_sprite"
+	{
+		"en"		"You chosen {green}defend{default} sprite!"
+	}
+	
+	"chosen_follow_sprite"
+	{
+		"en"		"You chosen {green}follow-me{default} sprite!"
+	}
+	
+	"sprite_removed"
+	{
+		"en"		"You removed sprite!"
+	}
+	
+	"swaped_to_zombies"
+	{
+		"#format"	"{1:N}, {2:N}"
+		"en"		"Player {green}{1}{default} was swaped to ZOMBIES by {purple}{2}{default} admin!"
+	}
+	
+	"swaped_to_humans"
+	{
+		"#format"	"{1:N}, {2:N}"
+		"en"		"Player {green}{1}{default} was swaped to HUMANS by {purple}{2}{default} admin!"
+	}
+	
+	"removed_from_leader"
+	{
+		"en"		"You was removed from leader position!"
+	}
+	
+	"new_leader"
+	{
+		"#format"	"{1:N}"
+		"en"		"Player {green}{1}{default} is new LEADER!"
+	}
+	
+	"leader_died"
+	{
+		"#format"	"{1:N}"
+		"en"		"Leader {green}{1}{default} has died!"
+	}
+	
+	"player_is_dead"
+	{
+		"en"		"Player is dead or not a human!"
+	}
+	
+	"infection_ban"
+	{
+		"#format"	"{1:N}, {2:i}"
+		"en"		"Player {green}{1}{default} got infection ban on {purple}{2}{default} rounds!"
+	}
+	
+	"infection_unban"
+	{
+		"#format"	"{1:N}"
+		"en"		"Player {green}{1}{default} was unbanned from infection ban!"
+	}
+	
+	"infected_by_player"
+	{
+		"#format"	"{1:N}"
+		"en"		"You was infected by {green}{1}{default}, now you have to infect other players!"
+	}
+	
+	"infected_frag"
+	{
+		"#format"	"{1:N}"
+		"en"		"You got {green}1{default} frag for infecting {purple}{1}{default}!"
+	}
+	
+	"first_infected"
+	{
+		"#format"	"{1:N}"
+		"en"		"Player {green}{1}{default} is first zombie! Apocalypse has started!"
+	}
+	
+	"riot_round"
+	{
+		"en"		"This round is {purple}ZOMBIE RIOT ROUND{default}!!!"
+	}
+}
