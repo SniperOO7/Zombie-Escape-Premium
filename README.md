@@ -14,12 +14,15 @@
     - Zombie/Human classes 
     - Nemesis feature
     - VIP features
+    - Infection bans
+    - Database stats
     - New and old sounds
     - Weapon menu
-    - Flash (= freeze grenade), He (= fire grenade)
+    - Decoy (= freeze grenade), He (= fire grenade), Smoke (= infection grenade)
     - VIP Flag: a (reservation)
     - Admin flag: b (ban)
     - Leader flag: o (custom_1)
+    - MORE INFORMATION ON ALLIEDMODDERS VERSION (https://forums.alliedmods.net/showthread.php?t=326056)
     
 * **Commands:**
     - /leader [LEADER MENU][
@@ -28,6 +31,7 @@
     - /guns, /weapons, /gun, /get [WEAPONS MENU]
     - /zclass, /class, /human [ZOMBIE/HUMAN CLASSES]
     - /za, /zea, /zadmin [ADMIN MENU]
+    - /stats, /top10, /shop, /p90, /negev, /bizon
 
 ![ddisp](https://i.imgur.com/Y3vGONO.png)
 * **My steam profile: https://steamcommunity.com/id/Sniper-oo7/**
