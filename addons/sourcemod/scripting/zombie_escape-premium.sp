@@ -3,7 +3,7 @@
 #define DEBUG
 
 #define PLUGIN_AUTHOR "Sniper007"
-#define PLUGIN_VERSION "4.0"
+#define PLUGIN_VERSION "4.5"
 
 #include <sourcemod>
 #include <sdktools>
@@ -23,6 +23,7 @@
 #include "ze-premium/ze-playerevents.sp"
 #include "ze-premium/ze-menus.sp"
 #include "ze-premium/ze-natives.sp"
+#include "ze-premium/ze-keyvalues.sp"
 
 #pragma newdecls required
 
@@ -95,7 +96,7 @@ public void OnPluginStart()
 	g_cZEFollowmeModelVtf = CreateConVar("sm_ze_followme_leader_material_vtf", "materials/ze_premium/followme.vtf", "Model for followme material sprite (VTF)");
 	
 	g_cZENemesis = CreateConVar("sm_ze_nemesis", "10", "How much chance in percent to first zombie will be nemesis, 0 = disabled");
-	g_cZENemesisModel = CreateConVar("sm_ze_nemesis_model", "models/player/custom_player/owston/re3/nemesis/nemesis_remake1.mdl", "Model of Nemesis");
+	g_cZENemesisModel = CreateConVar("sm_ze_nemesis_model", "models/player/custom_player/ventoz/marauder/marauder.mdl", "Model of Nemesis");
 	g_cZENemesisHP = CreateConVar("sm_ze_nemesis_hp", "30000", "Amout of nemesis HP");
 	g_cZENemesisSpeed = CreateConVar("sm_ze_nemesis_speed", "1.7", "Amout of nemesis speed");
 	g_cZENemesisGravity = CreateConVar("sm_ze_nemesis_gravity", "0.7", "Amout of nemesis gravity");
@@ -137,8 +138,9 @@ public void OnPluginStart()
 	g_cZEInfectionTime = CreateConVar("sm_ze_infection_time", "10", "How long (sec) player have to be first zombie to don't get infection ban, after he disconnected");
 	g_cZEInfectionBanPlayers = CreateConVar("sm_ze_infection_ban_players", "3", "How many player have to be on server for removing infection bans on round end");
 	
-	H_hAntiDisconnect = RegClientCookie("anti_disconnect", "", CookieAccess_Private);
+	g_cZEHUDInfo = CreateConVar("sm_ze_hud_information", "1", "1 = enable hud information panel, 0 = disable");
 	
+	CreateTimer(1.0, HUD, _, TIMER_REPEAT);
 	CreateTimer(5.0, PointsCheck, _, TIMER_REPEAT);
 	
 	AddNormalSoundHook(SoundHook);
@@ -169,7 +171,7 @@ public void SQL_Connection(Database hDatabase, const char[] szError, int iData)
 	{
 		g_hDatabase = hDatabase;
 		//Tady si většinou vytváříš tabulku, pokud ji ještě nemáš, toto doporučuji vždy dělat - taková kontrola, jestli ti to funguje, když se tabulka vytvoří, tak si cajk
-		g_hDatabase.Query(SQL_Error, "CREATE TABLE IF NOT EXISTS ze_premium_sql ( `id` INT NOT NULL AUTO_INCREMENT , `lastname` VARCHAR(128) NOT NULL DEFAULT 'N/A' , `steamid` VARCHAR(64) NOT NULL , `humanwins` INT(128) NOT NULL , `infected` INT(128) NOT NULL , `killedzm` INT(128) NOT NULL , PRIMARY KEY (`id`)) ENGINE = InnoDB;");
+		g_hDatabase.Query(SQL_Error, "CREATE TABLE IF NOT EXISTS ze_premium_sql ( `id` INT NOT NULL AUTO_INCREMENT , `lastname` VARCHAR(128) NOT NULL DEFAULT 'N/A' , `steamid` VARCHAR(64) NOT NULL , `humanwins` INT(128) NOT NULL , `infected` INT(128) NOT NULL , `killedzm` INT(128) NOT NULL , `infectionban` INT(128) NOT NULL , PRIMARY KEY (`id`)) ENGINE = InnoDB;");
 		g_hDatabase.SetCharset("utf8mb4");
 		PrintToServer("[MySQL] Ze Premium-SQL connected.");
 	}
@@ -199,10 +201,10 @@ public void OnClientCookiesCached(int client)
 {
 	char buffer[12];
 	
-	GetClientCookie(client, H_hAntiDisconnect, buffer, sizeof(buffer));
+	GetClientCookie(client, H_AntiDisconnect, buffer, sizeof(buffer));
 	if (StrEqual(buffer, ""))
 	{
-		SetClientCookie(client, H_hAntiDisconnect, "0");
+		SetClientCookie(client, H_AntiDisconnect, "0");
 	}
 }
 
@@ -212,12 +214,15 @@ public void OnMapStart()
 	{
 		if (IsValidClient(i))
 		{
-			Maximum_Choose[i] = 0;
+			i_Maximum_Choose[i] = 0;
 			g_bSamegun[i] = false;
 			Format(Primary_Gun[i], sizeof(Primary_Gun), "1");
 			Format(Secondary_Gun[i], sizeof(Secondary_Gun), "1");
 		}
 	}
+	
+	//AUTOMATIC DOWNLOAD
+	DownloadFiles();
 	
 	//MODELS
 	g_cZEHumanModel.GetString(HUMANMODEL, sizeof(HUMANMODEL));
@@ -387,8 +392,6 @@ public void OnMapStart()
 	//BEACON
 	g_iBeamSprite = PrecacheModel("materials/sprites/laserbeam.vmt");
 	g_iHaloSprite = PrecacheModel("materials/sprites/glow06.vmt");
-	BeamSprite = PrecacheModel("materials/sprites/laserbeam.vmt");
-	GlowSprite = PrecacheModel("materials/sprites/blueglow1.vmt");
 	
 	g_bRoundStarted = false;
 	g_bPause = false;
@@ -460,25 +463,19 @@ public void OnRoundEnd(Handle event, char[] name, bool dontBroadcast)
 					i_wins[i]++;
 				}
 			}
-			char sBuffer[12];
-			GetClientCookie(i, H_hAntiDisconnect, sBuffer, sizeof(sBuffer));
-			i_antidisconnect[i] = StringToInt(sBuffer);
-			if(i_antidisconnect[i] > 0 && soucet >= g_cZEInfectionBanPlayers.IntValue)
+
+			if(i_infectionban[i] > 0 && soucet >= g_cZEInfectionBanPlayers.IntValue)
 			{
-				i_antidisconnect[i]--;
-				char defamout[16];
-				Format(defamout, sizeof(defamout), "%i", i_antidisconnect[i]);
-				SetClientCookie(i, H_hAntiDisconnect, defamout);
+				char szSteamId[32], szQuery[512];
+				GetClientAuthId(i, AuthId_Engine, szSteamId, sizeof(szSteamId));
+				int newiban = i_infectionban[i] - 1;
+				g_hDatabase.Format(szQuery, sizeof(szQuery), "UPDATE ze_premium_sql SET infectionban = '%i' WHERE steamid='%s'", newiban, szSteamId);
+				g_hDatabase.Query(SQL_Error, szQuery);
 			}
 			CheckTeam(i);
 			SetEntProp(i, Prop_Data, "m_takedamage", 0, 1);
-			if (H_Beacon[i] != null)
-			{
-				KillTimer(H_Beacon[i]);
-				H_Beacon[i] = null;
-			}
 			g_bInfected[i] = false;
-			typeofsprite[i] = 0;
+			i_typeofsprite[i] = 0;
 			g_bBeacon[i] = false;
 			g_bIsLeader[i] = false;
 			g_hCooldown[i] = false;
@@ -493,7 +490,6 @@ public void OnRoundEnd(Handle event, char[] name, bool dontBroadcast)
 			g_bOnFire[i] = false;
 			g_bFreezeFlash[i] = false;
 			g_bNoRespawn[i] = false;
-			i_antidisconnect[i] = false;
 		}
 	}
 }
@@ -598,7 +594,7 @@ public Action CMD_P90(int client, int args)
 	{
 		if (i_Infection > 0 || GetClientTeam(client) == CS_TEAM_CT)
 		{
-			if (Maximum_Choose[client] < g_cZEMaximumUsage.IntValue)
+			if (i_Maximum_Choose[client] < g_cZEMaximumUsage.IntValue)
 			{
 				int primweapon = GetPlayerWeaponSlot(client, CS_SLOT_PRIMARY);
 				if (IsValidEdict(primweapon) && primweapon != -1)
@@ -608,8 +604,8 @@ public Action CMD_P90(int client, int args)
 				Format(Primary_Gun[client], sizeof(Primary_Gun), "weapon_p90");
 				CPrintToChat(client, " \x04[ZE-Weapons]\x01 %t", "chosen_gun", Primary_Gun[client]);
 				GivePlayerItem(client, Primary_Gun[client]);
-				Maximum_Choose[client]++;
-				int usages = g_cZEMaximumUsage.IntValue - Maximum_Choose[client];
+				i_Maximum_Choose[client]++;
+				int usages = g_cZEMaximumUsage.IntValue - i_Maximum_Choose[client];
 				CPrintToChat(client, " \x04[ZE-Weapons]\x01 %t", "gun_uses_left", usages);
 			}
 		}
@@ -623,7 +619,7 @@ public Action CMD_Bizon(int client, int args)
 	{
 		if (i_Infection > 0 || GetClientTeam(client) == CS_TEAM_CT)
 		{
-			if (Maximum_Choose[client] < g_cZEMaximumUsage.IntValue)
+			if (i_Maximum_Choose[client] < g_cZEMaximumUsage.IntValue)
 			{
 				int primweapon = GetPlayerWeaponSlot(client, CS_SLOT_PRIMARY);
 				if (IsValidEdict(primweapon) && primweapon != -1)
@@ -633,8 +629,8 @@ public Action CMD_Bizon(int client, int args)
 				Format(Primary_Gun[client], sizeof(Primary_Gun), "weapon_bizon");
 				CPrintToChat(client, " \x04[ZE-Weapons]\x01 %t", "chosen_gun", Primary_Gun[client]);
 				GivePlayerItem(client, Primary_Gun[client]);
-				Maximum_Choose[client]++;
-				int usages = g_cZEMaximumUsage.IntValue - Maximum_Choose[client];
+				i_Maximum_Choose[client]++;
+				int usages = g_cZEMaximumUsage.IntValue - i_Maximum_Choose[client];
 				CPrintToChat(client, " \x04[ZE-Weapons]\x01 %t", "gun_uses_left", usages);
 			}
 		}
@@ -648,7 +644,7 @@ public Action CMD_Negev(int client, int args)
 	{
 		if (i_Infection > 0 || GetClientTeam(client) == CS_TEAM_CT)
 		{
-			if (Maximum_Choose[client] < g_cZEMaximumUsage.IntValue)
+			if (i_Maximum_Choose[client] < g_cZEMaximumUsage.IntValue)
 			{
 				int primweapon = GetPlayerWeaponSlot(client, CS_SLOT_PRIMARY);
 				if (IsValidEdict(primweapon) && primweapon != -1)
@@ -658,8 +654,8 @@ public Action CMD_Negev(int client, int args)
 				Format(Primary_Gun[client], sizeof(Primary_Gun), "weapon_negev");
 				CPrintToChat(client, " \x04[ZE-Weapons]\x01 %t", "chosen_gun", Primary_Gun[client]);
 				GivePlayerItem(client, Primary_Gun[client]);
-				Maximum_Choose[client]++;
-				int usages = g_cZEMaximumUsage.IntValue - Maximum_Choose[client];
+				i_Maximum_Choose[client]++;
+				int usages = g_cZEMaximumUsage.IntValue - i_Maximum_Choose[client];
 				CPrintToChat(client, " \x04[ZE-Weapons]\x01 %t", "gun_uses_left", usages);
 			}
 		}
@@ -673,10 +669,10 @@ public Action CMD_GetGun(int client, int args)
 	{
 		if (Primary_Gun[client][0] == 'w' || Secondary_Gun[client][0] == 'w')
 		{
-			if (Maximum_Choose[client] < g_cZEMaximumUsage.IntValue)
+			if (i_Maximum_Choose[client] < g_cZEMaximumUsage.IntValue)
 			{
-				Maximum_Choose[client]++;
-				int usages = g_cZEMaximumUsage.IntValue - Maximum_Choose[client];
+				i_Maximum_Choose[client]++;
+				int usages = g_cZEMaximumUsage.IntValue - i_Maximum_Choose[client];
 				CPrintToChat(client, " \x04[ZE-Weapons]\x01 %t", "gun_uses_left", usages);
 				if (Primary_Gun[client][0] == 'w')
 				{
