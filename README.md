@@ -14,6 +14,8 @@
     - Zombie/Human classes 
     - Nemesis feature
     - VIP features
+    - Keyvalues (downloader for models)
+    - HUD indicator (class type, statistic ..)
     - Infection bans
     - Database stats
     - New and old sounds
