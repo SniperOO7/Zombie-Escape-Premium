@@ -1,9 +1,12 @@
 public Action FirstInfection(Handle timer)
 {
 	int numberofplayers = GetTeamClientCount(2) + GetTeamClientCount(3);
-	if(g_bPause == false && numberofplayers > 0)
+	if (GameRules_GetProp("m_bWarmupPeriod") != 1)
 	{
-		i_Infection--;
+		if(g_bPause == false && numberofplayers > 0)
+		{
+			i_Infection--;
+		}
 	}
 	
 	if(i_Infection > 0)
@@ -33,26 +36,23 @@ public Action FirstInfection(Handle timer)
 				}
 				else
 				{
-					ShowHudText(i, -1, "First infected will be: %i sec\nChance to be infected is: +%.1f percent", i_Infection, newpercent);
+					if(g_bWasFirstInfected[i] == true)
+					{
+						ShowHudText(i, -1, "First infected will be: %i sec\nChance to be infected is: +0 percent", i_Infection);
+					}
+					else
+					{
+						ShowHudText(i, -1, "First infected will be: %i sec\nChance to be infected is: +%.1f percent", i_Infection, newpercent);
+					}
 				}
-				char ch_humanclass[64];
-				if(i_hclass[i] == 1)
+				if(g_bInfected[i] == false)
 				{
-					Format(ch_humanclass, sizeof(ch_humanclass), "Bomber-Man");
+					PrintHintText(i, "\n<font color='#FF4500'>CHOSEN GUN:</font>%s | %s\n<font color='#4169E1'>HUMAN CLASS:</font>%s", Primary_Gun[i], Secondary_Gun[i], Selected_Class_Human[i]);
 				}
-				else if(i_hclass[i] == 2)
+				else
 				{
-					Format(ch_humanclass, sizeof(ch_humanclass), "Healer");
+					PrintHintText(i, "\nYou will be respawned in: <font color='#00FF00'>%i</font> sec", i_Infection);
 				}
-				else if(i_hclass[i] == 3)
-				{
-					Format(ch_humanclass, sizeof(ch_humanclass), "Heavy-Man");
-				}
-				else if(i_hclass[i] == 4)
-				{
-					Format(ch_humanclass, sizeof(ch_humanclass), "Big Boss");
-				}
-				PrintHintText(i, "\n<font color='#FF4500'>CHOSEN GUN:</font>%s | %s\n<font color='#4169E1'>HUMAN CLASS:</font>%s", Primary_Gun[i], Secondary_Gun[i], ch_humanclass);
 			}
 		}
 	}
@@ -68,7 +68,7 @@ public Action FirstInfection(Handle timer)
 				{
 					SetZombie(i, true);
 				}
-				else
+				else if(g_bInfected[i] == false)
 				{
 					CS_SwitchTeam(i, CS_TEAM_CT);
 				}
@@ -110,6 +110,7 @@ public Action FirstInfection(Handle timer)
 			{	
 				firstinfected = GetRandomsPlayer();
 				g_bInfected[firstinfected] = true;
+				g_bFirstInfected[firstinfected] = true;
 				CS_SwitchTeam(firstinfected, CS_TEAM_T);
 				CS_RespawnPlayer(firstinfected);
 				int primweapon = GetPlayerWeaponSlot(firstinfected, CS_SLOT_PRIMARY);
@@ -145,6 +146,7 @@ public Action FirstInfection(Handle timer)
 						EmitSoundToAll("ze_premium/ze-nemesis.mp3");
 						nemesis = 1;
 						i_SpecialRound = 1;
+						Format(Selected_Class_Zombie[firstinfected], sizeof(Selected_Class_Zombie), "Nemesis");
 						g_bIsNemesis[firstinfected] = true;
 						SetEntityHealth(firstinfected, g_cZENemesisHP.IntValue);
 						SetEntityModel(firstinfected, NEMESISMODEL);
@@ -241,14 +243,14 @@ public Action Respawn(Handle timer, int client)
 		if(g_bNoRespawn[client] == false)
 		{
 			CS_RespawnPlayer(client);
-			if(GetClientTeam(client) == CS_TEAM_T)
+			if(g_bInfected[client] == true)
 			{
 				if(i_Riotround > 0)
 				{
 					GivePlayerItem(client, "weapon_shield");
 				}
+				EmitSoundToAll("ze_premium/ze-respawn.mp3", client);
 			}
-			EmitSoundToAll("ze_premium/ze-respawn.mp3", client);
 			Call_StartForward(gF_ClientRespawned);
 			Call_PushCell(client);
 			Call_Finish();
@@ -281,7 +283,7 @@ public Action SwitchTeam(Handle timer, int client)
 			g_bInfected[client] = true;
 			CS_SwitchTeam(client, CS_TEAM_T);
 			CS_RespawnPlayer(client);
-			ZombieClass(client);
+			SetPlayerAsZombie(client);
 		}
 		else
 		{
@@ -328,17 +330,10 @@ public Action Slowdown(Handle timer, int client)
 {
 	if(IsValidClient(client) && IsPlayerAlive(client))
 	{
-		if(GetClientTeam(client) == CS_TEAM_T && g_bOnFire[client] == true)
+		if(g_bInfected[client] == true && g_bOnFire[client] == true)
 		{
 			float newspeed;
-			if(i_zclass[client] == 1)
-			{
-				newspeed = g_cZEZombieSpeed.FloatValue + 0.2;
-			}
-			else
-			{
-				newspeed = g_cZEZombieSpeed.FloatValue;
-			}
+			newspeed = g_cZEZombieSpeed.FloatValue;
 			SetEntPropFloat(client, Prop_Data, "m_flLaggedMovementValue", newspeed);
 			g_bOnFire[client] = false;
 		}
@@ -349,7 +344,7 @@ public Action PointsCheck(Handle timer)
 {
 	for (int i = 1; i <= MaxClients; i++)
 	{
-		if(IsValidClient(i))
+		if(IsValidClient(i) && !IsFakeClient(i))
 		{
 			Command_DataUpdate(i);
 		}
@@ -366,61 +361,13 @@ public Action HUD(Handle timer)
 			{
 				if(g_bInfected[i] == true)
 				{
-					char ch_zombieclass[64];
-					switch(i_zclass[i]) 
-					{
-						case 0:
-						{
-							Format(ch_zombieclass, sizeof(ch_zombieclass), "NONE");
-						}
-						case 1:
-						{
-							Format(ch_zombieclass, sizeof(ch_zombieclass), "Runner");
-						}
-						case 2:
-						{
-							Format(ch_zombieclass, sizeof(ch_zombieclass), "Tank");
-						}
-						case 3:
-						{
-							Format(ch_zombieclass, sizeof(ch_zombieclass), "Gravity");
-						}
-						case 4:
-						{
-							Format(ch_zombieclass, sizeof(ch_zombieclass), "Evil Clown");
-						}
-					}
 					SetHudTextParams(-1.0, -0.05, 1.02, 255, 0, 0, 255, 0, 0.0, 0.0, 0.0);
-					ShowHudText(i, -1, "Type: Zombie | Class: %s | Infected players: %i", ch_zombieclass, i_infectedh[i]);
+					ShowHudText(i, -1, "Type: Zombie | Class: %s | Infected players: %i", Selected_Class_Zombie[i], i_infectedh[i]);
 				}
 				else
 				{
-					char ch_humanclass[64];
-					switch(i_hclass[i]) 
-					{
-						case 0:
-						{
-							Format(ch_humanclass, sizeof(ch_humanclass), "NONE");
-						}
-						case 1:
-						{
-							Format(ch_humanclass, sizeof(ch_humanclass), "Bomber-Man");
-						}
-						case 2:
-						{
-							Format(ch_humanclass, sizeof(ch_humanclass), "Healer");
-						}
-						case 3:
-						{
-							Format(ch_humanclass, sizeof(ch_humanclass), "Heavy-Man");
-						}
-						case 4:
-						{
-							Format(ch_humanclass, sizeof(ch_humanclass), "Big Boss");
-						}
-					}
 					SetHudTextParams(-1.0, -0.05, 1.02, 0, 0, 255, 255, 0, 0.0, 0.0, 0.0);
-					ShowHudText(i, -1, "Type: Human | Class: %s | Won rounds: %i", ch_humanclass, i_hwins[i]);
+					ShowHudText(i, -1, "Type: Human | Class: %s | Won rounds: %i", Selected_Class_Human[i], i_hwins[i]);
 				}
 			}
 		}

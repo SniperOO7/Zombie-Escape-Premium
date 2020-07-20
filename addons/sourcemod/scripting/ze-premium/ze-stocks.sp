@@ -58,6 +58,12 @@ stock int GetRandomsPlayer(bool alive = true)
 	{
 		if (!IsValidClient(i,_, !alive))
 			continue;
+			
+		if(g_bInfected[i] != false)
+			continue;
+			
+		if(g_bWasFirstInfected[i] != false)
+			continue;
 
 		clients[clientCount++] = i;
 	}
@@ -227,129 +233,6 @@ void CheckTeam(int client)
 	}
 }
 
-void HumanClass(int client)
-{
-	switch(i_hclass[client]) 
-	{
-		case 0:
-		{
-			SetEntityHealth(client, g_cZEHumanHP.IntValue);
-			SetEntityModel(client, HUMANMODEL);
-			SetEntPropFloat(client, Prop_Data, "m_flLaggedMovementValue", 1.0);	
-		}
-		case 1:
-		{
-			SetEntityHealth(client, g_cZEHumanHP.IntValue);
-			char bomberman[64];
-			g_cZEBomberMan.GetString(bomberman, sizeof(bomberman));
-			GivePlayerItem(client, bomberman);
-			SetEntityModel(client, HUMANMODEL);
-			SetEntPropFloat(client, Prop_Data, "m_flLaggedMovementValue", 1.0);
-		}
-		case 2:
-		{
-			SetEntityHealth(client, g_cZEHumanHP.IntValue);
-			char healer[64];
-			g_cZEHealer.GetString(healer, sizeof(healer));
-			GivePlayerItem(client, healer);
-			SetEntityModel(client, HUMANMODEL);
-			SetEntPropFloat(client, Prop_Data, "m_flLaggedMovementValue", 1.0);
-		}
-		case 3:
-		{
-			int newhp = g_cZEHumanHP.IntValue + g_cZEHeavyman.IntValue;
-			SetEntityHealth(client, newhp);
-			SetEntityModel(client, HUMANMODEL);
-			SetEntPropFloat(client, Prop_Data, "m_flLaggedMovementValue", 1.0);
-		}
-		case 4:
-		{
-			i_protection[client] = g_cZEBigboss.IntValue;
-			SetEntityHealth(client, g_cZEHumanHP.IntValue);
-			SetEntityModel(client, HUMANMODEL);
-			SetEntPropFloat(client, Prop_Data, "m_flLaggedMovementValue", 1.0);
-		}
-	}
-}
-
-void ZombieClass(int client)
-{
-	switch(i_zclass[client]) 
-	{
-		case 0:
-		{
-			SetEntityHealth(client, g_cZEZombieHP.IntValue);
-			SetEntityModel(client, ZOMBIEMODEL);
-			SetEntPropFloat(client, Prop_Data, "m_flLaggedMovementValue", g_cZEZombieSpeed.FloatValue);
-		}
-		case 1:
-		{
-			float newspeed = g_cZEZombieSpeed.FloatValue + g_cZERunner.FloatValue;
-			SetEntityHealth(client, g_cZEZombieHP.IntValue);
-			SetEntPropFloat(client, Prop_Data, "m_flLaggedMovementValue", newspeed);
-			SetEntityModel(client, ZOMBIEMODEL);
-		}
-		case 2:
-		{
-			int newhp = g_cZEZombieHP.IntValue + g_cZETank.IntValue;
-			SetEntityHealth(client, newhp);
-			SetEntityModel(client, ZOMBIEMODEL);
-			SetEntPropFloat(client, Prop_Data, "m_flLaggedMovementValue", g_cZEZombieSpeed.FloatValue);
-		}
-		case 3:
-		{
-			SetEntityHealth(client, g_cZEZombieHP.IntValue);
-			SetEntityGravity(client, g_cZEGravity.FloatValue);
-			SetEntityModel(client, ZOMBIEMODEL);
-			SetEntPropFloat(client, Prop_Data, "m_flLaggedMovementValue", g_cZEZombieSpeed.FloatValue);
-		}
-		case 4:
-		{
-			float newspeed = g_cZEZombieSpeed.FloatValue + g_cZEEvilClownSpeed.FloatValue;
-			int newhp = g_cZEZombieHP.IntValue + g_cZEEvilClownHP.IntValue;
-			SetEntityHealth(client, newhp);
-			SetEntPropFloat(client, Prop_Data, "m_flLaggedMovementValue", newspeed);
-			SetEntityModel(client, ZOMBIEMODEL);
-		}
-	}
-}
-
-/*
-void ChooseNewZombie()
-{
-	int user = GetRandomsPlayer();
-	g_bInfected[user] = true;
-	CS_SwitchTeam(user, CS_TEAM_T);
-	CS_RespawnPlayer(user);
-	int primweapon = GetPlayerWeaponSlot(user, CS_SLOT_PRIMARY);
-	if(IsValidEdict(primweapon) && primweapon != -1)
-	{
-		RemoveEdict(primweapon);
-	}
-	int secweapon = GetPlayerWeaponSlot(user, CS_SLOT_SECONDARY);
-	if(IsValidEdict(secweapon) && secweapon != -1)
-	{
-		RemoveEdict(secweapon);
-	}
-	if(g_bIsLeader[user] == true)
-	{
-		g_bIsLeader[user] = false;
-		PrintToChatAll(" \x04[ZE-Leader]\x01 Leader \x04%N\x01 has died!", user);
-	}
-	if(spended[user] > 0)
-	{
-		int money = GetEntProp(user, Prop_Send, "m_iAccount");
-		SetEntProp(user, Prop_Send, "m_iAccount", money + spended[user]);
-	}
-	if(i_Riotround > 0 && g_cZEZombieShieldType.IntValue > 0)
-	{
-		GivePlayerItem(user, "weapon_shield");
-	}
-	SetEntityHealth(user, g_cZEMotherZombieHP.IntValue);
-	EmitSoundToAll("ze_premium/ze-respawn.mp3", user);
-	PrintToChatAll(" \x04[Zombie-Escape]\x01 Last zombie has disconnect from server, new player \x06%N\x01 was infected", user);
-}*/
-
 void SetZombie(int client, bool respawn)
 {
 	g_bInfected[client] = true;
@@ -383,8 +266,7 @@ void SetZombie(int client, bool respawn)
 	{
 		GivePlayerItem(client, "weapon_shield");
 	}
-	SetEntityHealth(client, g_cZEZombieHP.IntValue);
-	SetEntityModel(client, ZOMBIEMODEL);
+	SetPlayerAsZombie(client);
 }
 
 void HumanPain(int victim)
@@ -446,37 +328,40 @@ void ZombiePain(int victim)
 
 public Action SoundHook(int clients[64], int &numClients, char sound[PLATFORM_MAX_PATH], int &entity, int &channel, float &volume, int &level, int &pitch, int &flags)
 {
-	int player = GetPlayerHoldingKnife(entity);
-	if (player > 0 && IsClientInGame(player) && IsPlayerAlive(player) && GetClientTeam(player) == CS_TEAM_T && g_bInfected[player] == true)
-	{	
-		if (StrContains(sound, "weapons/knife/knife_hit_") != -1)
-		{
-			EmitSoundToAll("ze_premium/ze-wallhit.mp3", entity, channel, level, flags, volume, pitch);
-			return Plugin_Stop;
-		}
-		
-		else if (StrContains(sound, "weapons/knife/knife_slash") != -1)
-		{
-			int random = GetRandomInt(1, 6);
-			char soundPath[PLATFORM_MAX_PATH];
-			Format(soundPath, sizeof(soundPath), "ze_premium/ze-slash%i.mp3", random);
-			EmitSoundToAll(soundPath, entity, channel, level, flags, volume, pitch);
-			return Plugin_Stop;
-		}
-		
-		else if (StrContains(sound, "weapons/knife/knife_hit") != -1)
-		{
-			int random = GetRandomInt(1, 4);
-			char soundPath[PLATFORM_MAX_PATH];
-			Format(soundPath, sizeof(soundPath), "ze_premium/ze-zombiehit%i.mp3", random);
-			EmitSoundToAll(soundPath, entity, channel, level, flags, volume, pitch);
-			return Plugin_Stop;
-		}
-		
-		else if (StrContains(sound, "weapons/knife/knife_stab") != -1)
-		{
-			EmitSoundToAll("ze_premium/ze-stab.mp3", entity, channel, level, flags, volume, pitch);
-			return Plugin_Stop;
+	if(g_cZEZombieSounds.IntValue > 0)
+	{
+		int player = GetPlayerHoldingKnife(entity);
+		if (player > 0 && IsClientInGame(player) && IsPlayerAlive(player) && GetClientTeam(player) == CS_TEAM_T && g_bInfected[player] == true)
+		{	
+			if (StrContains(sound, "weapons/knife/knife_hit_") != -1)
+			{
+				EmitSoundToAll("ze_premium/ze-wallhit.mp3", entity, channel, level, flags, volume, pitch);
+				return Plugin_Stop;
+			}
+			
+			else if (StrContains(sound, "weapons/knife/knife_slash") != -1)
+			{
+				int random = GetRandomInt(1, 6);
+				char soundPath[PLATFORM_MAX_PATH];
+				Format(soundPath, sizeof(soundPath), "ze_premium/ze-slash%i.mp3", random);
+				EmitSoundToAll(soundPath, entity, channel, level, flags, volume, pitch);
+				return Plugin_Stop;
+			}
+			
+			else if (StrContains(sound, "weapons/knife/knife_hit") != -1)
+			{
+				int random = GetRandomInt(1, 4);
+				char soundPath[PLATFORM_MAX_PATH];
+				Format(soundPath, sizeof(soundPath), "ze_premium/ze-zombiehit%i.mp3", random);
+				EmitSoundToAll(soundPath, entity, channel, level, flags, volume, pitch);
+				return Plugin_Stop;
+			}
+			
+			else if (StrContains(sound, "weapons/knife/knife_stab") != -1)
+			{
+				EmitSoundToAll("ze_premium/ze-stab.mp3", entity, channel, level, flags, volume, pitch);
+				return Plugin_Stop;
+			}
 		}
 	}
 	
@@ -521,7 +406,7 @@ void Client_StopSound(int client, int entity, int channel, const char[] name)
 
 public void Command_DataUpdate(int client)
 {
-	if (IsValidClient(client))
+	if (IsValidClient(client) && !IsFakeClient(client))
 	{
 		char szSteamId[32], szQuery[512];
 		GetClientAuthId(client, AuthId_Engine, szSteamId, sizeof(szSteamId));
@@ -776,3 +661,28 @@ stock bool RemoveWeaponBySlot(int iClient, int iSlot)
     }
     return false;
 } 
+/*
+// Show overlay to all clients with lifetime | 0.0 = no auto remove
+stock void ShowOverlayAll(char[] path, float lifetime)
+{
+	for (int i = 1; i <= MaxClients; i++)
+	{
+		if (!IsClientInGame(i) || IsFakeClient(i) || IsClientSourceTV(i) || IsClientReplay(i))
+			continue;
+		
+		ClientCommand(i, "r_screenoverlay \"%s.vtf\"", path);
+		
+		if (lifetime != 0.0)
+			CreateTimer(lifetime, DeleteOverlay, GetClientUserId(i));
+	}
+}
+
+// Remove overlay from a client - Timer!
+stock Action DeleteOverlay(Handle timer, any userid)
+{
+	int client = GetClientOfUserId(userid);
+	if (client <= 0 || !IsClientInGame(client) || IsFakeClient(client) || IsClientSourceTV(client) || IsClientReplay(client))
+		return;
+	
+	ClientCommand(client, "r_screenoverlay \"\"");
+}*/

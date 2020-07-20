@@ -463,137 +463,11 @@ public int mZeClassHandler(Menu menu, MenuAction action, int client, int index)
 				
 				if (StrEqual(szItem, "menu1"))
 				{
-					openHumanClass(client);
+					FakeClientCommand(client, "sm_humanclass");
 				}
 				else if (StrEqual(szItem, "menu2"))
 				{
-					openZombieClass(client);
-				}
-			}
-		}
-	}
-}
-
-void openHumanClass(int client)
-{
-	Menu menu = new Menu(mZeHumanClassHandler);
-	
-	menu.SetTitle("[Human Class] Choose:");
-	
-	menu.AddItem("menu1", "Bomber-Man [+ GRENADE]");
-	menu.AddItem("menu2", "Healer [+ HEALTH-SHOT]");
-	menu.AddItem("menu3", "Heavy-Man [+ HP]");
-	if(IsClientVIP(client))
-	{
-		menu.AddItem("menu4", "[VIP] Big Boss [+ EXTRA LIFE]");
-	}
-	else
-	{
-		menu.AddItem("menu4", "[VIP] Big Boss [+ EXTRA LIFE]", ITEMDRAW_DISABLED);
-	}
-	
-	menu.Display(client, MENU_TIME_FOREVER);
-}
-
-public int mZeHumanClassHandler(Menu menu, MenuAction action, int client, int index)
-{
-	switch (action)
-	{
-		case MenuAction_Select:
-		{
-			if (IsValidClient(client))
-			{
-				char szItem[32];
-				menu.GetItem(index, szItem, sizeof(szItem));
-				
-				char szClass[64];
-				
-				if (StrEqual(szItem, "menu1"))
-				{ 
-					i_hclass[client] = 1;
-					Format(szClass, sizeof(szClass), "Bomber-Man");	
-					CPrintToChat(client, " \x04[ZE-Class]\x01 %t", "chosen_class", szClass);
-				}
-				else if (StrEqual(szItem, "menu2"))
-				{
-					i_hclass[client] = 2;
-					Format(szClass, sizeof(szClass), "Healer");	
-					CPrintToChat(client, " \x04[ZE-Class]\x01 %t", "chosen_class", szClass);
-				}
-				else if (StrEqual(szItem, "menu3"))
-				{
-					i_hclass[client] = 3;
-					Format(szClass, sizeof(szClass), "Heavy-Man");	
-					CPrintToChat(client, " \x04[ZE-Class]\x01 %t", "chosen_class", szClass);
-				}
-				else if (StrEqual(szItem, "menu4"))
-				{
-					i_hclass[client] = 4;
-					Format(szClass, sizeof(szClass), "Big Boss");	
-					CPrintToChat(client, " \x04[ZE-Class]\x01 %t", "chosen_class", szClass);
-				}
-			}
-		}
-	}
-}
-
-void openZombieClass(int client)
-{
-	Menu menu = new Menu(mZeZombieClassHandler);
-	
-	menu.SetTitle("[Zombie Class] Choose:");
-	
-	menu.AddItem("menu1", "Runner [++ SPEED]");
-	menu.AddItem("menu2", "Tank [++ HP]");
-	menu.AddItem("menu3", "Gravity [++ GRAVITY]");
-	if(IsClientVIP(client))
-	{
-		menu.AddItem("menu4", "[VIP] Evil Clown [+ SPEED, HP]");
-	}
-	else
-	{
-		menu.AddItem("menu4", "[VIP] Evil Clown [+ SPEED, HP]", ITEMDRAW_DISABLED);
-	}
-	
-	menu.Display(client, MENU_TIME_FOREVER);
-}
-
-public int mZeZombieClassHandler(Menu menu, MenuAction action, int client, int index)
-{
-	switch (action)
-	{
-		case MenuAction_Select:
-		{
-			if (IsValidClient(client))
-			{
-				char szItem[32];
-				menu.GetItem(index, szItem, sizeof(szItem));
-				
-				char szClass[64];
-				
-				if (StrEqual(szItem, "menu1"))
-				{ 
-					i_zclass[client] = 1;
-					Format(szClass, sizeof(szClass), "Runner");	
-					CPrintToChat(client, " \x04[ZE-Class]\x01 %t", "chosen_class", szClass);
-				}
-				else if (StrEqual(szItem, "menu2"))
-				{
-					i_zclass[client] = 2;
-					Format(szClass, sizeof(szClass), "Tank");	
-					CPrintToChat(client, " \x04[ZE-Class]\x01 %t", "chosen_class", szClass);
-				}
-				else if (StrEqual(szItem, "menu3"))
-				{
-					i_zclass[client] = 3;
-					Format(szClass, sizeof(szClass), "Gravity");	
-					CPrintToChat(client, " \x04[ZE-Class]\x01 %t", "chosen_class", szClass);
-				}
-				else if (StrEqual(szItem, "menu4"))
-				{
-					i_zclass[client] = 4;
-					Format(szClass, sizeof(szClass), "Evil Clown");	
-					CPrintToChat(client, " \x04[ZE-Class]\x01 %t", "chosen_class", szClass);
+					FakeClientCommand(client, "sm_zombieclass");
 				}
 			}
 		}
@@ -1048,7 +922,7 @@ public int mRoundBanHandler(Menu menu, MenuAction action, int client, int index)
 						g_bInfected[user] = true;
 						RemoveGuns(user);
 						DisableSpells(user);
-						ZombieClass(user);
+						SetPlayerAsZombie(user);
 						Call_StartForward(gF_ClientInfected);
 						Call_PushCell(user);
 						Call_PushCell(client);
@@ -1060,7 +934,7 @@ public int mRoundBanHandler(Menu menu, MenuAction action, int client, int index)
 						CS_SwitchTeam(user, CS_TEAM_CT);
 						g_bInfected[user] = false;
 						DisableSpells(user);
-						HumanClass(user);
+						SetPlayerAsHuman(user);
 						SetEntityGravity(user, 1.0);
 						Call_StartForward(gF_ClientHumanPost);
 						Call_PushCell(user);
@@ -1255,6 +1129,7 @@ public int mZeInfectionLongHandler(Menu menu, MenuAction action, int client, int
 				if (StrEqual(szItem, "menu1"))
 				{
 					newiban = i_infectionban[user] + 2;
+					i_infectionban[user] = newiban;
 					g_hDatabase.Format(szQuery, sizeof(szQuery), "UPDATE ze_premium_sql SET infectionban = '%i' WHERE steamid='%s'", newiban, szSteamId);
 					g_hDatabase.Query(SQL_Error, szQuery);
 					CPrintToChatAll(" \x04[ZE-Admin]\x01 %t", "infection_ban", user, newiban);
@@ -1263,6 +1138,7 @@ public int mZeInfectionLongHandler(Menu menu, MenuAction action, int client, int
 				else if (StrEqual(szItem, "menu2"))
 				{
 					newiban = i_infectionban[user] + 5;
+					i_infectionban[user] = newiban;
 					g_hDatabase.Format(szQuery, sizeof(szQuery), "UPDATE ze_premium_sql SET infectionban = '%i' WHERE steamid='%s'", newiban, szSteamId);
 					g_hDatabase.Query(SQL_Error, szQuery);
 					CPrintToChatAll(" \x04[ZE-Admin]\x01 %t", "infection_ban", user, newiban);
@@ -1271,6 +1147,7 @@ public int mZeInfectionLongHandler(Menu menu, MenuAction action, int client, int
 				else if (StrEqual(szItem, "menu3"))
 				{
 					newiban = i_infectionban[user] + 10;
+					i_infectionban[user] = newiban;
 					g_hDatabase.Format(szQuery, sizeof(szQuery), "UPDATE ze_premium_sql SET infectionban = '%i' WHERE steamid='%s'", newiban, szSteamId);
 					g_hDatabase.Query(SQL_Error, szQuery);
 					CPrintToChatAll(" \x04[ZE-Admin]\x01 %t", "infection_ban", user, newiban);
@@ -1279,6 +1156,7 @@ public int mZeInfectionLongHandler(Menu menu, MenuAction action, int client, int
 				else if (StrEqual(szItem, "menu4"))
 				{
 					newiban = 0;
+					i_infectionban[user] = newiban;
 					g_hDatabase.Format(szQuery, sizeof(szQuery), "UPDATE ze_premium_sql SET infectionban = '%i' WHERE steamid='%s'", newiban, szSteamId);
 					g_hDatabase.Query(SQL_Error, szQuery);
 					CPrintToChatAll(" \x04[ZE-Admin]\x01 %t", "infection_unban", user);

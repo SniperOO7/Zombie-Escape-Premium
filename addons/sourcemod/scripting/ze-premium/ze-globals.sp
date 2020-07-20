@@ -7,9 +7,6 @@
 #define SMOKE 1
 char g_iaGrenadeOffsets[] = {15, 17, 16, 14, 18, 17};
 
-//COKIES
-Handle H_AntiDisconnect;
-
 //FORWARDS
 Handle gF_ClientInfected;
 Handle gF_ClientRespawned;
@@ -42,15 +39,6 @@ ConVar g_cZENemesisModel;
 ConVar g_cZENemesisHP;
 ConVar g_cZENemesisSpeed;
 ConVar g_cZENemesisGravity;
-ConVar g_cZEBomberMan;
-ConVar g_cZEHealer;
-ConVar g_cZEHeavyman;
-ConVar g_cZEBigboss;
-ConVar g_cZERunner;
-ConVar g_cZETank;
-ConVar g_cZEGravity;
-ConVar g_cZEEvilClownSpeed;
-ConVar g_cZEEvilClownHP;
 ConVar g_cZEZombieRiots;
 ConVar g_cZEZombieShieldType;
 ConVar g_cZEHeGrenadeEffect;
@@ -64,6 +52,16 @@ ConVar g_cZEInfectionBans;
 ConVar g_cZEInfectionTime;
 ConVar g_cZEInfectionBanPlayers;
 ConVar g_cZEHUDInfo;
+ConVar g_cZEZombieSounds;
+ConVar g_cZEZMwinmodelVmt;
+ConVar g_cZEZMwinmodelVtf;
+ConVar g_cZEHUMANwinmodelVmt;
+ConVar g_cZEHUMANwinmodelVtf;
+
+char g_sZEConfig[PLATFORM_MAX_PATH];
+char g_sZEConfig2[PLATFORM_MAX_PATH];
+
+KeyValues kvZombies, kvHumans;
 
 Database g_hDatabase;
 
@@ -75,6 +73,8 @@ char ZOMBIEMODEL[128];
 char NEMESISMODEL[128];
 char DEFEND[128], DEFENDVTF[128];
 char FOLLOWME[128], FOLLOWMEVTF[128];
+char ZMWINS[128], HUMANWINS[128];
+char ZMWINSVTF[128], HUMANWINSVTF[128];
 
 //GUNS
 char Primary_Gun[MAXPLAYERS + 1][64];
@@ -96,6 +96,8 @@ bool g_bInfected[MAXPLAYERS + 1] = false;
 bool g_bIsNemesis[MAXPLAYERS + 1] = false;
 int i_pause[MAXPLAYERS + 1];
 bool g_bNotDied[MAXPLAYERS + 1];
+bool g_bFirstInfected[MAXPLAYERS + 1] = false;
+bool g_bWasFirstInfected[MAXPLAYERS + 1];
 bool g_bNoRespawn[MAXPLAYERS + 1] = false;
 bool g_bAntiDisconnect[MAXPLAYERS + 1] = false;
 int i_Riotround;
@@ -105,6 +107,9 @@ int i_SpecialRound;
 int i_zclass[MAXPLAYERS + 1];
 int i_hclass[MAXPLAYERS + 1];
 int i_protection[MAXPLAYERS + 1];
+char Selected_Class_Human[MAXPLAYERS + 1][100];
+char Selected_Class_Zombie[MAXPLAYERS + 1][100];
+Handle H_Respawntimer[MAXPLAYERS + 1];
 
 //GAME
 int i_Infection;
