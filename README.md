@@ -11,7 +11,7 @@
     - Admin menu
     - Leader menu (beacon, sprites..)
     - Zombie/Human models
-    - Zombie/Human classes 
+    - Zombie/Human classes (you can add, remove or edit classes) 
     - Nemesis feature
     - VIP features
     - Keyvalues (downloader for models)
