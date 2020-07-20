@@ -910,9 +910,9 @@ void openSpritesMarkers(int client)
 		menu.AddItem("menu1", "Defend Marker");
 	}
 	menu.AddItem("menu2", "[Remove Marker]");
-	if(typeofsprite[client] > 0)
+	if(i_typeofsprite[client] > 0)
 	{
-		if(typeofsprite[client] == 1)
+		if(i_typeofsprite[client] == 1)
 		{
 			menu.AddItem("menu3", "Defend Sprite [ACTIVE]");
 			menu.AddItem("menu4", "Follow-me Sprite");
@@ -947,7 +947,7 @@ public int mZeLeaderSpritesHandler(Menu menu, MenuAction action, int client, int
 				if (StrEqual(szItem, "menu1"))
 				{
 					RemoveMarker(client);
-					markerEntities[client] = SpawnMarker(client, DEFEND);
+					i_markerEntities[client] = SpawnMarker(client, DEFEND);
 					g_bMarker = true;
 					CPrintToChat(client, " \x04[ZE-Leader]\x01 %t", "defend_marker_spawned");
 					openSpritesMarkers(client);
@@ -962,8 +962,8 @@ public int mZeLeaderSpritesHandler(Menu menu, MenuAction action, int client, int
 				else if (StrEqual(szItem, "menu3"))
 				{
 					RemoveSprite(client);
-					spriteEntities[client] = AttachSprite(client, DEFEND);
-					typeofsprite[client] = 1;
+					i_spriteEntities[client] = AttachSprite(client, DEFEND);
+					i_typeofsprite[client] = 1;
 					EmitSoundToAll("ze_premium/ze-defend.mp3", client);
 					openSpritesMarkers(client);
 					CPrintToChat(client, " \x04[ZE-Leader]\x01 %t", "chosen_defend_sprite");
@@ -971,8 +971,8 @@ public int mZeLeaderSpritesHandler(Menu menu, MenuAction action, int client, int
 				else if (StrEqual(szItem, "menu4"))
 				{
 					RemoveSprite(client);
-					spriteEntities[client] = AttachSprite(client, FOLLOWME);
-					typeofsprite[client] = 2;
+					i_spriteEntities[client] = AttachSprite(client, FOLLOWME);
+					i_typeofsprite[client] = 2;
 					EmitSoundToAll("ze_premium/ze-folowme.mp3", client);
 					openSpritesMarkers(client);
 					CPrintToChat(client, " \x04[ZE-Leader]\x01 %t", "chosen_follow_sprite");
@@ -980,7 +980,7 @@ public int mZeLeaderSpritesHandler(Menu menu, MenuAction action, int client, int
 				else if (StrEqual(szItem, "menu5"))
 				{
 					RemoveSprite(client);
-					typeofsprite[client] = 0;
+					i_typeofsprite[client] = 0;
 					openSpritesMarkers(client);
 					CPrintToChat(client, " \x04[ZE-Leader]\x01 %t", "sprite_removed");
 				}
@@ -1048,9 +1048,7 @@ public int mRoundBanHandler(Menu menu, MenuAction action, int client, int index)
 						g_bInfected[user] = true;
 						RemoveGuns(user);
 						DisableSpells(user);
-						SetEntityModel(user, ZOMBIEMODEL);
-						SetEntityHealth(user, g_cZEZombieHP.IntValue);
-						SetEntPropFloat(user, Prop_Data, "m_flLaggedMovementValue", g_cZEZombieSpeed.FloatValue);
+						ZombieClass(user);
 						Call_StartForward(gF_ClientInfected);
 						Call_PushCell(user);
 						Call_PushCell(client);
@@ -1062,9 +1060,7 @@ public int mRoundBanHandler(Menu menu, MenuAction action, int client, int index)
 						CS_SwitchTeam(user, CS_TEAM_CT);
 						g_bInfected[user] = false;
 						DisableSpells(user);
-						SetEntityModel(user, HUMANMODEL);
-						SetEntityHealth(user, g_cZEHumanHP.IntValue);
-						SetEntPropFloat(user, Prop_Data, "m_flLaggedMovementValue", 1.0);
+						HumanClass(user);
 						SetEntityGravity(user, 1.0);
 						Call_StartForward(gF_ClientHumanPost);
 						Call_PushCell(user);
@@ -1183,10 +1179,7 @@ void openInfectionBan(int client)
 			char userid[11];
 			char username[MAX_NAME_LENGTH];
 			IntToString(GetClientUserId(i), userid, sizeof(userid));
-			char sBuffer[12];
-			GetClientCookie(i, H_hAntiDisconnect, sBuffer, sizeof(sBuffer));
-			i_antidisconnect[i] = StringToInt(sBuffer);
-			Format(username, sizeof(username), "%N [%i]", i, i_antidisconnect[i]);
+			Format(username, sizeof(username), "%N [%i]", i, i_infectionban[i]);
 			menu.AddItem(userid, username);
 			iValidCount++;
 		}
@@ -1255,47 +1248,39 @@ public int mZeInfectionLongHandler(Menu menu, MenuAction action, int client, int
 				
 				ResetPack(g_hDataPackUser);
 				int user = ReadPackCell(g_hDataPackUser);
-				int ban;
+				int newiban;
+				char szSteamId[32], szQuery[512];
+				GetClientAuthId(user, AuthId_Engine, szSteamId, sizeof(szSteamId));
 				
 				if (StrEqual(szItem, "menu1"))
 				{
-					char sBuffer[12];
-					GetClientCookie(user, H_hAntiDisconnect, sBuffer, sizeof(sBuffer));
-					int amout = StringToInt(sBuffer);
-					ban = 2 + amout;
-					char defamout[16];
-					Format(defamout, sizeof(defamout), "%i", ban);
-					SetClientCookie(user, H_hAntiDisconnect, defamout);
-					CPrintToChatAll(" \x04[ZE-Admin]\x01 %t", "infection_ban", user, ban);
+					newiban = i_infectionban[user] + 2;
+					g_hDatabase.Format(szQuery, sizeof(szQuery), "UPDATE ze_premium_sql SET infectionban = '%i' WHERE steamid='%s'", newiban, szSteamId);
+					g_hDatabase.Query(SQL_Error, szQuery);
+					CPrintToChatAll(" \x04[ZE-Admin]\x01 %t", "infection_ban", user, newiban);
 					openInfectionBan(client);
 				}
 				else if (StrEqual(szItem, "menu2"))
 				{
-					char sBuffer[12];
-					GetClientCookie(user, H_hAntiDisconnect, sBuffer, sizeof(sBuffer));
-					int amout = StringToInt(sBuffer);
-					ban = 5 + amout;
-					char defamout[16];
-					Format(defamout, sizeof(defamout), "%i", ban);
-					SetClientCookie(user, H_hAntiDisconnect, defamout);
-					CPrintToChatAll(" \x04[ZE-Admin]\x01 %t", "infection_ban", user, ban);
+					newiban = i_infectionban[user] + 5;
+					g_hDatabase.Format(szQuery, sizeof(szQuery), "UPDATE ze_premium_sql SET infectionban = '%i' WHERE steamid='%s'", newiban, szSteamId);
+					g_hDatabase.Query(SQL_Error, szQuery);
+					CPrintToChatAll(" \x04[ZE-Admin]\x01 %t", "infection_ban", user, newiban);
 					openInfectionBan(client);
 				}
 				else if (StrEqual(szItem, "menu3"))
 				{
-					char sBuffer[12];
-					GetClientCookie(user, H_hAntiDisconnect, sBuffer, sizeof(sBuffer));
-					int amout = StringToInt(sBuffer);
-					ban = 10 + amout;
-					char defamout[16];
-					Format(defamout, sizeof(defamout), "%i", ban);
-					SetClientCookie(user, H_hAntiDisconnect, defamout);
-					CPrintToChatAll(" \x04[ZE-Admin]\x01 %t", "infection_ban", user, ban);
+					newiban = i_infectionban[user] + 10;
+					g_hDatabase.Format(szQuery, sizeof(szQuery), "UPDATE ze_premium_sql SET infectionban = '%i' WHERE steamid='%s'", newiban, szSteamId);
+					g_hDatabase.Query(SQL_Error, szQuery);
+					CPrintToChatAll(" \x04[ZE-Admin]\x01 %t", "infection_ban", user, newiban);
 					openInfectionBan(client);
 				}
 				else if (StrEqual(szItem, "menu4"))
 				{
-					SetClientCookie(user, H_hAntiDisconnect, "0");
+					newiban = 0;
+					g_hDatabase.Format(szQuery, sizeof(szQuery), "UPDATE ze_premium_sql SET infectionban = '%i' WHERE steamid='%s'", newiban, szSteamId);
+					g_hDatabase.Query(SQL_Error, szQuery);
 					CPrintToChatAll(" \x04[ZE-Admin]\x01 %t", "infection_unban", user);
 					openInfectionBan(client);
 				}

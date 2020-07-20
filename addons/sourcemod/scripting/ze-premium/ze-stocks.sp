@@ -167,69 +167,42 @@ public int AttachSprite(int client, char[] sprite) //https://forums.alliedmods.n
 
 public void RemoveSprite(int client)
 {
-	if (spriteEntities[client] != -1 && IsValidEdict(spriteEntities[client]))
+	if (i_spriteEntities[client] != -1 && IsValidEdict(i_spriteEntities[client]))
 	{
 		char m_szClassname[64];
-		GetEdictClassname(spriteEntities[client], m_szClassname, sizeof(m_szClassname));
+		GetEdictClassname(i_spriteEntities[client], m_szClassname, sizeof(m_szClassname));
 		if(strcmp("env_sprite", m_szClassname)==0)
-		AcceptEntityInput(spriteEntities[client], "Kill");
+		AcceptEntityInput(i_spriteEntities[client], "Kill");
 	}
-	spriteEntities[client] = -1;
+	i_spriteEntities[client] = -1;
 }
 
 public void RemoveMarker(int client)
 {
-	if (markerEntities[client] != -1 && IsValidEdict(markerEntities[client]))
+	if (i_markerEntities[client] != -1 && IsValidEdict(i_markerEntities[client]))
 	{
 		char m_szClassname[64];
-		GetEdictClassname(markerEntities[client], m_szClassname, sizeof(m_szClassname));
+		GetEdictClassname(i_markerEntities[client], m_szClassname, sizeof(m_szClassname));
 		if(strcmp("env_sprite", m_szClassname)==0)
-		AcceptEntityInput(markerEntities[client], "Kill");
+		AcceptEntityInput(i_markerEntities[client], "Kill");
 	}
-	markerEntities[client] = -1;
+	i_markerEntities[client] = -1;
 }
 
 void CheckTimer()
 {
-	if(i_Infection == 10)
+	switch(i_Infection) 
 	{
-		EmitSoundToAll("ze_premium/10.mp3");
-	}
-	else if(i_Infection == 9)
-	{
-		EmitSoundToAll("ze_premium/9.mp3");
-	}
-	else if(i_Infection == 8)
-	{
-		EmitSoundToAll("ze_premium/8.mp3");
-	}
-	else if(i_Infection == 7)
-	{
-		EmitSoundToAll("ze_premium/7.mp3");
-	}
-	else if(i_Infection == 6)
-	{
-		EmitSoundToAll("ze_premium/6.mp3");
-	}
-	else if(i_Infection == 5)
-	{
-		EmitSoundToAll("ze_premium/5.mp3");
-	}
-	else if(i_Infection == 4)
-	{
-		EmitSoundToAll("ze_premium/4.mp3");
-	}
-	else if(i_Infection == 3)
-	{
-		EmitSoundToAll("ze_premium/3.mp3");
-	}
-	else if(i_Infection == 2)
-	{
-		EmitSoundToAll("ze_premium/2.mp3");
-	}
-	else if(i_Infection == 1)
-	{
-		EmitSoundToAll("ze_premium/1.mp3");
+		case 10: EmitSoundToAll("ze_premium/10.mp3");
+		case 9: EmitSoundToAll("ze_premium/9.mp3");
+		case 8: EmitSoundToAll("ze_premium/8.mp3");
+		case 7: EmitSoundToAll("ze_premium/7.mp3");
+		case 6: EmitSoundToAll("ze_premium/6.mp3");
+		case 5: EmitSoundToAll("ze_premium/5.mp3");
+		case 4: EmitSoundToAll("ze_premium/4.mp3");
+		case 3: EmitSoundToAll("ze_premium/3.mp3");
+		case 2: EmitSoundToAll("ze_premium/2.mp3");
+		case 1: EmitSoundToAll("ze_premium/1.mp3");
 	}
 }
 
@@ -256,81 +229,91 @@ void CheckTeam(int client)
 
 void HumanClass(int client)
 {
-	if (i_hclass[client] == 1)
+	switch(i_hclass[client]) 
 	{
-		SetEntityHealth(client, g_cZEHumanHP.IntValue);
-		char bomberman[64];
-		g_cZEBomberMan.GetString(bomberman, sizeof(bomberman));
-		GivePlayerItem(client, bomberman);
-		SetEntityModel(client, HUMANMODEL);
-		SetEntPropFloat(client, Prop_Data, "m_flLaggedMovementValue", 1.0);
-	}
-	else if (i_hclass[client] == 2)
-	{
-		SetEntityHealth(client, g_cZEHumanHP.IntValue);
-		char healer[64];
-		g_cZEHealer.GetString(healer, sizeof(healer));
-		GivePlayerItem(client, healer);
-		SetEntityModel(client, HUMANMODEL);
-		SetEntPropFloat(client, Prop_Data, "m_flLaggedMovementValue", 1.0);
-	}
-	else if (i_hclass[client] == 3)
-	{
-		int newhp = g_cZEHumanHP.IntValue + g_cZEHeavyman.IntValue;
-		SetEntityHealth(client, newhp);
-		SetEntityModel(client, HUMANMODEL);
-		SetEntPropFloat(client, Prop_Data, "m_flLaggedMovementValue", 1.0);
-	}
-	else if (i_hclass[client] == 4)
-	{
-		i_protection[client] = g_cZEBigboss.IntValue;
-		SetEntityHealth(client, g_cZEHumanHP.IntValue);
-		SetEntityModel(client, HUMANMODEL);
-		SetEntPropFloat(client, Prop_Data, "m_flLaggedMovementValue", 1.0);
-	}
-	else
-	{
-		SetEntityHealth(client, g_cZEHumanHP.IntValue);
-		SetEntityModel(client, HUMANMODEL);
-		SetEntPropFloat(client, Prop_Data, "m_flLaggedMovementValue", 1.0);
+		case 0:
+		{
+			SetEntityHealth(client, g_cZEHumanHP.IntValue);
+			SetEntityModel(client, HUMANMODEL);
+			SetEntPropFloat(client, Prop_Data, "m_flLaggedMovementValue", 1.0);	
+		}
+		case 1:
+		{
+			SetEntityHealth(client, g_cZEHumanHP.IntValue);
+			char bomberman[64];
+			g_cZEBomberMan.GetString(bomberman, sizeof(bomberman));
+			GivePlayerItem(client, bomberman);
+			SetEntityModel(client, HUMANMODEL);
+			SetEntPropFloat(client, Prop_Data, "m_flLaggedMovementValue", 1.0);
+		}
+		case 2:
+		{
+			SetEntityHealth(client, g_cZEHumanHP.IntValue);
+			char healer[64];
+			g_cZEHealer.GetString(healer, sizeof(healer));
+			GivePlayerItem(client, healer);
+			SetEntityModel(client, HUMANMODEL);
+			SetEntPropFloat(client, Prop_Data, "m_flLaggedMovementValue", 1.0);
+		}
+		case 3:
+		{
+			int newhp = g_cZEHumanHP.IntValue + g_cZEHeavyman.IntValue;
+			SetEntityHealth(client, newhp);
+			SetEntityModel(client, HUMANMODEL);
+			SetEntPropFloat(client, Prop_Data, "m_flLaggedMovementValue", 1.0);
+		}
+		case 4:
+		{
+			i_protection[client] = g_cZEBigboss.IntValue;
+			SetEntityHealth(client, g_cZEHumanHP.IntValue);
+			SetEntityModel(client, HUMANMODEL);
+			SetEntPropFloat(client, Prop_Data, "m_flLaggedMovementValue", 1.0);
+		}
 	}
 }
 
 void ZombieClass(int client)
 {
-	if(i_zclass[client] == 1)
+	switch(i_zclass[client]) 
 	{
-		float newspeed = g_cZEZombieSpeed.FloatValue + g_cZERunner.FloatValue;
-		SetEntityHealth(client, g_cZEZombieHP.IntValue);
-		SetEntPropFloat(client, Prop_Data, "m_flLaggedMovementValue", newspeed);
-		SetEntityModel(client, ZOMBIEMODEL);
-	}
-	else if(i_zclass[client] == 2)
-	{
-		int newhp = g_cZEZombieHP.IntValue + g_cZETank.IntValue;
-		SetEntityHealth(client, newhp);
-		SetEntityModel(client, ZOMBIEMODEL);
-	}
-	else if(i_zclass[client] == 3)
-	{
-		SetEntityHealth(client, g_cZEZombieHP.IntValue);
-		SetEntityGravity(client, g_cZEGravity.FloatValue);
-		SetEntityModel(client, ZOMBIEMODEL);
-	}
-	else if(i_zclass[client] == 4)
-	{
-		float newspeed = g_cZEZombieSpeed.FloatValue + g_cZEEvilClownSpeed.FloatValue;
-		int newhp = g_cZEZombieHP.IntValue + g_cZEEvilClownHP.IntValue;
-		SetEntityHealth(client, newhp);
-		SetEntPropFloat(client, Prop_Data, "m_flLaggedMovementValue", newspeed);
-		SetEntityModel(client, ZOMBIEMODEL);
-	}
-	else
-	{
-		SetEntityHealth(client, g_cZEZombieHP.IntValue);
-		SetEntityModel(client, ZOMBIEMODEL);
+		case 0:
+		{
+			SetEntityHealth(client, g_cZEZombieHP.IntValue);
+			SetEntityModel(client, ZOMBIEMODEL);
+			SetEntPropFloat(client, Prop_Data, "m_flLaggedMovementValue", g_cZEZombieSpeed.FloatValue);
+		}
+		case 1:
+		{
+			float newspeed = g_cZEZombieSpeed.FloatValue + g_cZERunner.FloatValue;
+			SetEntityHealth(client, g_cZEZombieHP.IntValue);
+			SetEntPropFloat(client, Prop_Data, "m_flLaggedMovementValue", newspeed);
+			SetEntityModel(client, ZOMBIEMODEL);
+		}
+		case 2:
+		{
+			int newhp = g_cZEZombieHP.IntValue + g_cZETank.IntValue;
+			SetEntityHealth(client, newhp);
+			SetEntityModel(client, ZOMBIEMODEL);
+			SetEntPropFloat(client, Prop_Data, "m_flLaggedMovementValue", g_cZEZombieSpeed.FloatValue);
+		}
+		case 3:
+		{
+			SetEntityHealth(client, g_cZEZombieHP.IntValue);
+			SetEntityGravity(client, g_cZEGravity.FloatValue);
+			SetEntityModel(client, ZOMBIEMODEL);
+			SetEntPropFloat(client, Prop_Data, "m_flLaggedMovementValue", g_cZEZombieSpeed.FloatValue);
+		}
+		case 4:
+		{
+			float newspeed = g_cZEZombieSpeed.FloatValue + g_cZEEvilClownSpeed.FloatValue;
+			int newhp = g_cZEZombieHP.IntValue + g_cZEEvilClownHP.IntValue;
+			SetEntityHealth(client, newhp);
+			SetEntPropFloat(client, Prop_Data, "m_flLaggedMovementValue", newspeed);
+			SetEntityModel(client, ZOMBIEMODEL);
+		}
 	}
 }
+
 /*
 void ChooseNewZombie()
 {
@@ -411,21 +394,15 @@ void HumanPain(int victim)
 	{
 		i_pause[victim] = 0;
 		int hit = GetRandomInt(1, 4);
-		if (hit == 4)
-		{
-			EmitSoundToAll("ze_premium/ze-humanpain4.mp3", victim);
-		}
-		else if (hit == 3)
-		{
-			EmitSoundToAll("ze_premium/ze-humanpain3.mp3", victim);
-		}
-		else if (hit == 2)
-		{
-			EmitSoundToAll("ze_premium/ze-humanpain2.mp3", victim);
-		}
-		else if (hit == 1)
+		if(hit == 1)
 		{
 			EmitSoundToAll("ze_premium/ze-humanpain.mp3", victim);
+		}
+		else
+		{
+			char soundPath[PLATFORM_MAX_PATH];
+			Format(soundPath, sizeof(soundPath), "ze_premium/ze-humanpain%i.mp3", hit);
+			EmitSoundToAll(soundPath, victim);
 		}
 	}
 }
@@ -744,7 +721,7 @@ void FlashFreeze(int client, float origin[3])
 
 void BeamFollowCreate(int entity, int color[4])
 {
-	TE_SetupBeamFollow(entity, BeamSprite,	0, 1.0, 10.0, 10.0, 5, color);
+	TE_SetupBeamFollow(entity, g_iBeamSprite,	0, 1.0, 10.0, 10.0, 5, color);
 	TE_SendToAll();	
 }
 

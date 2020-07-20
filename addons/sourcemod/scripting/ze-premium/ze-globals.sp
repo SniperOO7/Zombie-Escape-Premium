@@ -5,11 +5,10 @@
 #define FlashColor	{0,255,255,255}
 #define SmokeColor	{0,255,0,255}
 #define SMOKE 1
-int BeamSprite, GlowSprite;
 char g_iaGrenadeOffsets[] = {15, 17, 16, 14, 18, 17};
 
 //COKIES
-Handle H_hAntiDisconnect;
+Handle H_AntiDisconnect;
 
 //FORWARDS
 Handle gF_ClientInfected;
@@ -64,6 +63,7 @@ ConVar g_cZEFreezenadedistance;
 ConVar g_cZEInfectionBans;
 ConVar g_cZEInfectionTime;
 ConVar g_cZEInfectionBanPlayers;
+ConVar g_cZEHUDInfo;
 
 Database g_hDatabase;
 
@@ -79,13 +79,13 @@ char FOLLOWME[128], FOLLOWMEVTF[128];
 //GUNS
 char Primary_Gun[MAXPLAYERS + 1][64];
 char Secondary_Gun[MAXPLAYERS + 1][64];
-int Maximum_Choose[MAXPLAYERS + 1];
+int i_Maximum_Choose[MAXPLAYERS + 1];
 bool g_bSamegun[MAXPLAYERS + 1] = false;
 
 //LEADER
-int spriteEntities[MAXPLAYERS + 1];
-int markerEntities[MAXPLAYERS + 1];
-int typeofsprite[MAXPLAYERS + 1];
+int i_spriteEntities[MAXPLAYERS + 1];
+int i_markerEntities[MAXPLAYERS + 1];
+int i_typeofsprite[MAXPLAYERS + 1];
 bool g_bMarker = false;
 bool g_bIsLeader[MAXPLAYERS + 1] = false;
 bool g_bBeacon[MAXPLAYERS + 1] = false;
@@ -110,8 +110,8 @@ int i_protection[MAXPLAYERS + 1];
 int i_Infection;
 bool g_bRoundStarted = false;
 bool g_bPause = false;
-int i_antidisconnect[MAXPLAYERS + 1];
 int i_respawn[MAXPLAYERS + 1];
+int i_infectionban[MAXPLAYERS + 1];
 bool g_hCooldown[MAXPLAYERS + 1];
 
 int g_iSoundEnts[2048];
@@ -129,3 +129,5 @@ int i_binfnade;
 int i_wins[MAXPLAYERS + 1];
 int i_infected[MAXPLAYERS + 1];
 int i_killedzm[MAXPLAYERS + 1];
+int i_hwins[MAXPLAYERS + 1];
+int i_infectedh[MAXPLAYERS + 1];

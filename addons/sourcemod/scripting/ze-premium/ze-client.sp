@@ -2,19 +2,17 @@ public void OnClientDisconnect(int client)
 {
 	if(g_bAntiDisconnect[client] == true)
 	{
-		char sBuffer[12];
-		GetClientCookie(client, H_hAntiDisconnect, sBuffer, sizeof(sBuffer));
-		int amout = StringToInt(sBuffer);
-		amout += g_cZEInfectionBans.IntValue;
-		char defamout[16];
-		Format(defamout, sizeof(defamout), "%i", amout);
-		SetClientCookie(client, H_hAntiDisconnect, defamout);
-		CPrintToChatAll(" \x04[Zombie-Escape]\x01 %t", "infected_disconnected", client, amout);
+		char szSteamId[32], szQuery[512];
+		GetClientAuthId(client, AuthId_Engine, szSteamId, sizeof(szSteamId));
+		int newiban = i_infectionban[client] + g_cZEInfectionBans.IntValue;
+		g_hDatabase.Format(szQuery, sizeof(szQuery), "UPDATE ze_premium_sql SET infectionban = '%i' WHERE steamid='%s'", newiban, szSteamId);
+		g_hDatabase.Query(SQL_Error, szQuery);
+		CPrintToChatAll(" \x04[Zombie-Escape]\x01 %t", "infected_disconnected", client, newiban);
 	}
-	Maximum_Choose[client] = 0;
+	i_Maximum_Choose[client] = 0;
 	g_bSamegun[client] = false;
 	i_zclass[client] = 0;
-	typeofsprite[client] = 0;
+	i_typeofsprite[client] = 0;
 	i_hclass[client] = 0;
 	i_respawn[client] = 0;
 	g_bBeacon[client] = false;
@@ -32,7 +30,7 @@ public void OnClientDisconnect(int client)
 
 public void OnClientPutInServer(int client)
 {
-	Maximum_Choose[client] = 0;
+	i_Maximum_Choose[client] = 0;
 	g_bSamegun[client] = false;
 	g_bIsLeader[client] = false;
 	g_bInfected[client] = false;

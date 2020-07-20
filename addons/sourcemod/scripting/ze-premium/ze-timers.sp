@@ -27,12 +27,9 @@ public Action FirstInfection(Handle timer)
 				float percent = float(soucet) / 100;
 				float newpercent = float(numberinfected) / percent;
 				SetHudTextParams(-1.0, 0.1, 1.02, 0, 255, 0, 255, 0, 0.0, 0.0, 0.0);
-				char sBuffer[12];
-				GetClientCookie(i, H_hAntiDisconnect, sBuffer, sizeof(sBuffer));
-				i_antidisconnect[i] = StringToInt(sBuffer);
-				if(i_antidisconnect[i] > 0)
+				if(i_infectionban[i] > 0)
 				{
-					ShowHudText(i, -1, "First infected will be: %i sec\nYou will be infected [YOU HAVE: %i INFECTION BANS]", i_Infection, i_antidisconnect[i]);
+					ShowHudText(i, -1, "First infected will be: %i sec\nYou will be infected [YOU HAVE: %i INFECTION BANS]", i_Infection, i_infectionban[i]);
 				}
 				else
 				{
@@ -67,10 +64,7 @@ public Action FirstInfection(Handle timer)
 		{
 			if (IsValidClient(i))
 			{
-				char sBuffer[12];
-				GetClientCookie(i, H_hAntiDisconnect, sBuffer, sizeof(sBuffer));
-				i_antidisconnect[i] = StringToInt(sBuffer);
-				if(i_antidisconnect[i] > 0)
+				if(i_infectionban[i] > 0)
 				{
 					SetZombie(i, true);
 				}
@@ -246,6 +240,7 @@ public Action Respawn(Handle timer, int client)
 	{
 		if(g_bNoRespawn[client] == false)
 		{
+			CS_RespawnPlayer(client);
 			if(GetClientTeam(client) == CS_TEAM_T)
 			{
 				if(i_Riotround > 0)
@@ -253,7 +248,6 @@ public Action Respawn(Handle timer, int client)
 					GivePlayerItem(client, "weapon_shield");
 				}
 			}
-			CS_RespawnPlayer(client);
 			EmitSoundToAll("ze_premium/ze-respawn.mp3", client);
 			Call_StartForward(gF_ClientRespawned);
 			Call_PushCell(client);
@@ -287,6 +281,7 @@ public Action SwitchTeam(Handle timer, int client)
 			g_bInfected[client] = true;
 			CS_SwitchTeam(client, CS_TEAM_T);
 			CS_RespawnPlayer(client);
+			ZombieClass(client);
 		}
 		else
 		{
@@ -359,6 +354,78 @@ public Action PointsCheck(Handle timer)
 			Command_DataUpdate(i);
 		}
 	}
+}
+
+public Action HUD(Handle timer)
+{
+	if(g_cZEHUDInfo.IntValue > 0)
+	{
+		for (int i = 1; i <= MaxClients; i++)
+		{
+			if(IsValidClient(i))
+			{
+				if(g_bInfected[i] == true)
+				{
+					char ch_zombieclass[64];
+					switch(i_zclass[i]) 
+					{
+						case 0:
+						{
+							Format(ch_zombieclass, sizeof(ch_zombieclass), "NONE");
+						}
+						case 1:
+						{
+							Format(ch_zombieclass, sizeof(ch_zombieclass), "Runner");
+						}
+						case 2:
+						{
+							Format(ch_zombieclass, sizeof(ch_zombieclass), "Tank");
+						}
+						case 3:
+						{
+							Format(ch_zombieclass, sizeof(ch_zombieclass), "Gravity");
+						}
+						case 4:
+						{
+							Format(ch_zombieclass, sizeof(ch_zombieclass), "Evil Clown");
+						}
+					}
+					SetHudTextParams(-1.0, -0.05, 1.02, 255, 0, 0, 255, 0, 0.0, 0.0, 0.0);
+					ShowHudText(i, -1, "Type: Zombie | Class: %s | Infected players: %i", ch_zombieclass, i_infectedh[i]);
+				}
+				else
+				{
+					char ch_humanclass[64];
+					switch(i_hclass[i]) 
+					{
+						case 0:
+						{
+							Format(ch_humanclass, sizeof(ch_humanclass), "NONE");
+						}
+						case 1:
+						{
+							Format(ch_humanclass, sizeof(ch_humanclass), "Bomber-Man");
+						}
+						case 2:
+						{
+							Format(ch_humanclass, sizeof(ch_humanclass), "Healer");
+						}
+						case 3:
+						{
+							Format(ch_humanclass, sizeof(ch_humanclass), "Heavy-Man");
+						}
+						case 4:
+						{
+							Format(ch_humanclass, sizeof(ch_humanclass), "Big Boss");
+						}
+					}
+					SetHudTextParams(-1.0, -0.05, 1.02, 0, 0, 255, 255, 0, 0.0, 0.0, 0.0);
+					ShowHudText(i, -1, "Type: Human | Class: %s | Won rounds: %i", ch_humanclass, i_hwins[i]);
+				}
+			}
+		}
+	}
+	return Plugin_Continue;
 }
 
 public Action CreateEvent_SmokeDetonate(Handle timer, any entity)

@@ -20,6 +20,9 @@ public void SQL_CheckDbQuery(Database hDatabase, DBResultSet hResults, const cha
 	
 	if (hResults.RowCount > 0)
 	{
+		i_hwins[client] = hResults.FetchInt(3);
+		i_infectedh[client] = hResults.FetchInt(4);
+		i_infectionban[client] = hResults.FetchInt(6);
 	}
 	else
 	{
@@ -58,6 +61,8 @@ public void szQueryUpdateData(Database hDatabase, DBResultSet hResults, const ch
 		int finalwins = hwins + i_wins[client];
 		int finalinfected = infected + i_infected[client];
 		int finalzmkills = killedzm + i_killedzm[client];
+		i_hwins[client] = finalwins;
+		i_infectedh[client] = finalinfected;
 		
 		g_hDatabase.Format(szQuery, sizeof(szQuery), "UPDATE ze_premium_sql SET humanwins = '%i', infected = '%i', killedzm = '%i' WHERE steamid='%s'", finalwins, finalinfected, finalzmkills, szSteamId);
 		g_hDatabase.Query(SQL_Error, szQuery);
