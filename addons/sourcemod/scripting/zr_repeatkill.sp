@@ -20,10 +20,7 @@ public Plugin myinfo =
 };
 
 public OnPluginStart()
-{
-	if ((g_hRespawnDelay = FindConVar("zr_respawn_delay")) == INVALID_HANDLE)
-		SetFailState("Failed to find zr_respawn_delay cvar.");
-		
+{		
 	HookEvent("round_start", Event_RoundStart);
 	HookEvent("player_death", OnPlayerDeath);
 }
@@ -53,7 +50,7 @@ public OnPlayerDeath(Handle event, char[] name, bool dontBroadcast)
 	{
 		float fGameTime = GetGameTime();
 		
-		if (fGameTime - g_fDeathTime[victim] - GetConVarFloat(g_hRespawnDelay) < 5.0)
+		if (fGameTime - g_fDeathTime[victim] - 1.0 < 5.0)
 		{
 			PrintToChatAll(" \x04[Zombie-Escape]\x01 Repeat killer detected. Disabling respawn for this round.");
 			g_bBlockRespawn = true;

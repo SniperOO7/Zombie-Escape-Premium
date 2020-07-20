@@ -3,7 +3,7 @@
 #define DEBUG
 
 #define PLUGIN_AUTHOR "Sniper007"
-#define PLUGIN_VERSION "4.5"
+#define PLUGIN_VERSION "5.0"
 
 #include <sourcemod>
 #include <sdktools>
@@ -55,15 +55,14 @@ public void OnPluginStart()
 	RegConsoleCmd("sm_gun", CMD_Weapon);
 	RegConsoleCmd("sm_guns", CMD_Weapon);
 	
-	RegConsoleCmd("sm_zclass", CMD_Class);
 	RegConsoleCmd("sm_class", CMD_Class);
-	RegConsoleCmd("sm_zclass", CMD_Class);
-	RegConsoleCmd("sm_human", CMD_Class);
-	RegConsoleCmd("sm_humanclass", CMD_Class);
 	
 	RegConsoleCmd("sm_leader", CMD_Leader);
 	
 	RegConsoleCmd("sm_shop", CMD_Shop);
+	
+	RegConsoleCmd("sm_humanclass", CMD_HumanClass);
+	RegConsoleCmd("sm_zombieclass", CMD_ZMClass);
 	
 	RegConsoleCmd("sm_za", CMD_Admin);
 	RegConsoleCmd("sm_zea", CMD_Admin);
@@ -94,6 +93,10 @@ public void OnPluginStart()
 	g_cZEDefendModelVtf = CreateConVar("sm_ze_defend_leader_material_vtf", "materials/ze_premium/defendhere.vtf", "Model for defend material sprite/marker (VTF)");
 	g_cZEFollowmeModelVmt = CreateConVar("sm_ze_followme_leader_material_vmt", "materials/ze_premium/followme.vmt", "Model for followme material sprite (VMT)");
 	g_cZEFollowmeModelVtf = CreateConVar("sm_ze_followme_leader_material_vtf", "materials/ze_premium/followme.vtf", "Model for followme material sprite (VTF)");
+	g_cZEZMwinmodelVmt = CreateConVar("sm_ze_zombie_win_material_vmt", "materials/ze_premium/zombiewin.vmt", "Model for zombie win material sprite (VMT)");
+	g_cZEZMwinmodelVtf = CreateConVar("sm_ze_zombie_win_material_vtf", "materials/ze_premium/zombiewin.vtf", "Model for zombie win material sprite (VTF)");
+	g_cZEHUMANwinmodelVmt = CreateConVar("sm_ze_human_win_material_vmt", "materials/ze_premium/humanwin.vmt", "Model for human win material sprite (VMT)");
+	g_cZEHUMANwinmodelVtf = CreateConVar("sm_ze_human_win_material_vtf", "materials/ze_premium/humanwin.vtf", "Model for human win material sprite (VTF)");
 	
 	g_cZENemesis = CreateConVar("sm_ze_nemesis", "10", "How much chance in percent to first zombie will be nemesis, 0 = disabled");
 	g_cZENemesisModel = CreateConVar("sm_ze_nemesis_model", "models/player/custom_player/ventoz/marauder/marauder.mdl", "Model of Nemesis");
@@ -103,17 +106,6 @@ public void OnPluginStart()
 	
 	g_cZEZombieRiots = CreateConVar("sm_ze_zombie_riot", "10", "How much chance in percent to will be zombie riot round, 0 = disabled");
 	g_cZEZombieShieldType = CreateConVar("sm_ze_zombie_riot_shield", "1", "When will player get shield (1 = after infected, respawn, 0 = only after respawn)");
-	
-	g_cZEBomberMan = CreateConVar("sm_ze_bomberman_grenade", "weapon_hegrenade", "Type of grenade for bomber-man [HUMAN CLASS]");
-	g_cZEHealer = CreateConVar("sm_ze_healer_healthshot", "weapon_healthshot", "Type of item, what will healer get [HUMAN CLASS]");
-	g_cZEHeavyman = CreateConVar("sm_ze_heavyman_hp", "50", "How much HP, will tank get [HUMAN CLASS]");
-	g_cZEBigboss = CreateConVar("sm_ze_bigboss_extralives", "1", "How many extra lives will big boss have [HUMAN CLASS]");
-	
-	g_cZERunner = CreateConVar("sm_ze_runner", "0.3", "How much speed, wil runner get [ZOMBIE CLASS]");
-	g_cZETank = CreateConVar("sm_ze_tank", "2000", "How much HP, will tank get [ZOMBIE CLASS]");
-	g_cZEGravity = CreateConVar("sm_ze_gravity", "0.8", "How much gravity, will gravity get [ZOMBIE CLASS]");
-	g_cZEEvilClownSpeed = CreateConVar("sm_ze_evilclown_speed", "0.2", "How much +speed (sm_ze_zombiespeed + evil clown speed) will evil clown get [ZOMBIE CLASS]");
-	g_cZEEvilClownHP = CreateConVar("sm_ze_evilclown_hp", "1000", "How much HP will evil clown get [ZOMBIE CLASS]");
 	
 	g_cZEFirstInfection = CreateConVar("sm_ze_infection", "30", "Time to first infection");
 	g_cZEZombieHP = CreateConVar("sm_ze_zombiehp", "10000", "Amout of zombie HP");
@@ -140,6 +132,11 @@ public void OnPluginStart()
 	
 	g_cZEHUDInfo = CreateConVar("sm_ze_hud_information", "1", "1 = enable hud information panel, 0 = disable");
 	
+	g_cZEZombieSounds = CreateConVar("sm_ze_zombie_attack_sounds", "1", "1 = enable zombie attack sound, 0 = disable");
+	
+	BuildPath(Path_SM, g_sZEConfig, sizeof(g_sZEConfig), "configs/ze_premium/zombies_classes.cfg");
+	BuildPath(Path_SM, g_sZEConfig2, sizeof(g_sZEConfig2), "configs/ze_premium/humans_classes.cfg");
+	
 	CreateTimer(1.0, HUD, _, TIMER_REPEAT);
 	CreateTimer(5.0, PointsCheck, _, TIMER_REPEAT);
 	
@@ -151,6 +148,11 @@ public void OnPluginStart()
 public void OnConfigsExecuted()
 {
 	Database.Connect(SQL_Connection, "ze_premium_sql");
+	
+	kvZombies = new KeyValues("zombies_classes");
+	kvHumans = new KeyValues("humans_classes");
+	kvZombies.ImportFromFile(g_sZEConfig);
+	kvHumans.ImportFromFile(g_sZEConfig2);
 }
 
 public void SQL_Error(Database hDatabase, DBResultSet hResults, const char[] szError, int iData)
@@ -197,17 +199,6 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 	return APLRes_Success;
 }
 
-public void OnClientCookiesCached(int client)
-{
-	char buffer[12];
-	
-	GetClientCookie(client, H_AntiDisconnect, buffer, sizeof(buffer));
-	if (StrEqual(buffer, ""))
-	{
-		SetClientCookie(client, H_AntiDisconnect, "0");
-	}
-}
-
 public void OnMapStart()
 {
 	for (int i = 1; i <= MaxClients; i++)
@@ -232,6 +223,10 @@ public void OnMapStart()
 	g_cZEDefendModelVtf.GetString(DEFENDVTF, sizeof(DEFENDVTF));
 	g_cZEFollowmeModelVmt.GetString(FOLLOWME, sizeof(FOLLOWME));
 	g_cZEFollowmeModelVtf.GetString(FOLLOWMEVTF, sizeof(FOLLOWMEVTF));
+	g_cZEZMwinmodelVmt.GetString(ZMWINS, sizeof(ZMWINS));
+	g_cZEZMwinmodelVtf.GetString(ZMWINSVTF, sizeof(ZMWINSVTF));
+	g_cZEHUMANwinmodelVmt.GetString(HUMANWINS, sizeof(HUMANWINS));
+	g_cZEHUMANwinmodelVtf.GetString(HUMANWINSVTF, sizeof(HUMANWINSVTF));
 	
 	PrecacheModel(HUMANMODEL);
 	PrecacheModel(NEMESISMODEL);
@@ -242,7 +237,15 @@ public void OnMapStart()
 	AddFileToDownloadsTable(DEFEND);
 	AddFileToDownloadsTable(FOLLOWMEVTF);
 	AddFileToDownloadsTable(FOLLOWME);
+	AddFileToDownloadsTable(ZMWINSVTF);
+	AddFileToDownloadsTable(ZMWINS);
+	AddFileToDownloadsTable(HUMANWINSVTF);
+	AddFileToDownloadsTable(HUMANWINS);
 	
+	PrecacheDecal(ZMWINS, true);
+	PrecacheDecal(ZMWINSVTF, true);
+	PrecacheDecal(HUMANWINS, true);
+	PrecacheDecal(HUMANWINSVTF, true);
 	PrecacheDecal(DEFEND, true);
 	PrecacheDecal(DEFENDVTF, true);
 	PrecacheDecal(FOLLOWME, true);
@@ -414,7 +417,7 @@ public void Event_RoundStart(Event event, const char[] name, bool bDontBroadcast
 			{	
 				SetEntPropFloat(i, Prop_Data, "m_flLaggedMovementValue", 1.0);
 				SetEntProp(i, Prop_Data, "m_takedamage", 0, 1);
-				HumanClass(i);
+				SetPlayerAsHuman(i);
 				
 				if (g_bSamegun[i] == true)
 				{
@@ -452,10 +455,31 @@ public void OnRoundEnd(Handle event, char[] name, bool dontBroadcast)
 	i_SpecialRound = 0;
 	i_binfnade = 0;
 	int winner_team = GetEventInt(event, "winner");
+	/*
+	if(winner_team == 2)
+	{
+		ShowOverlayAll(ZMWINSVTF, 4.0);
+	}
+	else if(winner_team == 3)
+	{
+		ShowOverlayAll(HUMANWINSVTF, 4.0);
+	}*/
+	
 	for (int i = 1; i <= MaxClients; i++)
 	{
 		if (IsValidClient(i))
 		{
+			if(g_bWasFirstInfected[i] == true)
+			{
+				g_bWasFirstInfected[i] = false;
+			}
+			
+			if(g_bFirstInfected[i] == true)
+			{
+				g_bFirstInfected[i] = false;
+				g_bWasFirstInfected[i] = true;
+			}
+			
 			if(winner_team == 3)
 			{ 
 				if(g_bInfected[i] == false)
@@ -485,6 +509,11 @@ public void OnRoundEnd(Handle event, char[] name, bool dontBroadcast)
 			{
 				KillTimer(H_Beacon[i]);
 				H_Beacon[i] = null;	
+			}
+			if(H_Respawntimer[i] != null)
+			{
+				KillTimer(H_Respawntimer[i]);
+				H_Respawntimer[i] = null;	
 			}
 			g_bFireHE[i] = false;
 			g_bOnFire[i] = false;
