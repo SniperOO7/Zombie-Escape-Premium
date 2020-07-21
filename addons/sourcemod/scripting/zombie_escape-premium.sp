@@ -3,7 +3,7 @@
 #define DEBUG
 
 #define PLUGIN_AUTHOR "Sniper007"
-#define PLUGIN_VERSION "5.5"
+#define PLUGIN_VERSION "6.0"
 
 #include <sourcemod>
 #include <sdktools>
@@ -406,6 +406,8 @@ public void OnMapStart()
 	
 	g_bRoundStarted = false;
 	g_bPause = false;
+	g_bWaitingForPlayer = false;
+	i_waitingforplayers = 0;
 }
 
 public void Event_RoundStart(Event event, const char[] name, bool bDontBroadcast)
@@ -462,6 +464,7 @@ public void OnRoundEnd(Handle event, char[] name, bool dontBroadcast)
 	i_Riotround = 0;
 	i_SpecialRound = 0;
 	i_binfnade = 0;
+	i_waitingforplayers = 0;
 	int winner_team = GetEventInt(event, "winner");
 	/*
 	if(winner_team == 2)
