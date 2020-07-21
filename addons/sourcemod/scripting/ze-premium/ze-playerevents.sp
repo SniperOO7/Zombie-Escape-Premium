@@ -3,7 +3,9 @@ public void OnPlayerDeath(Handle event, char[] name, bool dontBroadcast)
 	int client = GetClientOfUserId(GetEventInt(event, "userid"));
 	int attacker = GetClientOfUserId(GetEventInt(event, "attacker"));
 	
-	if (GameRules_GetProp("m_bWarmupPeriod") != 1)
+	int numberofplayers = GetTeamClientCount(2) + GetTeamClientCount(3);
+	
+	if (GameRules_GetProp("m_bWarmupPeriod") != 1 && numberofplayers > 2)
 	{
 		if (IsValidClient(client))
 		{	
@@ -126,13 +128,14 @@ public Action OnTakeDamage(int victim, int &attacker, int &inflictor, float &dam
 		}
 	}
 	
-	if (GameRules_GetProp("m_bWarmupPeriod") != 1)
+	int numberofplayers = GetTeamClientCount(2) + GetTeamClientCount(3);
+	if (GameRules_GetProp("m_bWarmupPeriod") != 1 && numberofplayers > 2)
 	{
 		if (IsValidClient(attacker) && IsValidClient(victim))
 		{
 			if(attacker != victim && i_Infection == 0)
 			{		
-				if(GetClientTeam(attacker) == CS_TEAM_T && GetClientTeam(victim) == CS_TEAM_CT)
+				if(g_bInfected[attacker] == true && g_bInfected[victim] == false)
 				{
 					if(i_protection[victim] > 0)
 					{
@@ -245,7 +248,7 @@ public Action Event_PlayerHurt(Event event, const char[] name, bool dontBroadcas
 
 public Action OnPlayerRunCmd(int client, int & buttons, int & impulse, float vel[3], float angles[3], int & weapon, int & subtype, int & cmdnum, int & tickcount, int & seed, int mouse[2])
 {
-	if(GetClientTeam(client) == CS_TEAM_CT && g_bInfected[client] == false)
+	if(g_bInfected[client] == false)
 	{
 		if (buttons & IN_RELOAD)
 		{

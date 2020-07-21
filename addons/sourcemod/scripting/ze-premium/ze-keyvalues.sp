@@ -245,6 +245,7 @@ void SetPlayerAsZombie(int client)
 	char zmSpeed[10];
 	char zmHeath[10];
 	char zmModel[PLATFORM_MAX_PATH + 1];
+	char zmArms[PLATFORM_MAX_PATH + 1];
 	char flags[40] = "";
 	flags = "";
 	kvZombies.GetString("name", 		zmName, 	sizeof(zmName));
@@ -252,6 +253,7 @@ void SetPlayerAsZombie(int client)
 	kvZombies.GetString("speed", 		zmSpeed, 	sizeof(zmSpeed));
 	kvZombies.GetString("health", 		zmHeath, 	sizeof(zmHeath));
 	kvZombies.GetString("model_path", 	zmModel, 	sizeof(zmModel));
+	kvZombies.GetString("arms_path", 	zmArms, 	sizeof(zmArms));
 	
 	float fZmGravity; 
 	float fZmSpeed;
@@ -259,6 +261,14 @@ void SetPlayerAsZombie(int client)
 	fZmSpeed = StringToFloat(zmSpeed);
 	int iZmHealth = StringToInt(zmHeath);
 	Selected_Class_Zombie[client] = zmName;
+	
+	if(zmArms[0] != '-')
+	{
+		Zombie_Arms[client] = zmArms;
+		if(!IsModelPrecached(zmArms))
+			PrecacheModel(zmArms, true);
+		CreateTimer(0.7, SetArms, client, TIMER_FLAG_NO_MAPCHANGE);
+	}
 	
 	SetEntityHealth(client, iZmHealth);
 	SetEntityGravity(client, fZmGravity);
@@ -289,8 +299,8 @@ void SetPlayerAsHuman(int client)
 	char humanModel[PLATFORM_MAX_PATH + 1];
 	char flags[40] = "";
 	flags = "";
-	kvHumans.GetString("name", 			humanName, 	sizeof(humanName));
-	kvHumans.GetString("item", 			humanItem, 	sizeof(humanItem));
+	kvHumans.GetString("name", 			humanName, 		sizeof(humanName));
+	kvHumans.GetString("item", 			humanItem, 		sizeof(humanItem));
 	kvHumans.GetString("protection", 	humanProtect, 	sizeof(humanProtect));
 	kvHumans.GetString("gravity", 		humanGravity, 	sizeof(humanGravity));
 	kvHumans.GetString("speed", 		humanSpeed, 	sizeof(humanSpeed));
@@ -651,4 +661,57 @@ public bool HasPlayerFlags(int client, char flags[40])
 	}
 	
 	return false;
+}
+
+public Action SetArms(Handle timer, int client)
+{
+	SetPlayerArms(client, Zombie_Arms[client]);	
+}
+
+public void SetPlayerArms(int client, char[] arms)
+{
+	if(!IsPlayerAlive(client)) 
+	{
+		return;
+	}
+	
+	char currentmodel[128];
+	
+	GetEntPropString(client, Prop_Send, "m_szArmsModel", currentmodel, sizeof(currentmodel));
+
+	int activeWeapon = GetEntPropEnt(client, Prop_Send, "m_hActiveWeapon");
+	if(activeWeapon != -1)
+	{
+		SetEntPropEnt(client, Prop_Send, "m_hActiveWeapon", -1);
+	}
+	if(activeWeapon != -1)
+	{
+		DataPack dpack;
+		CreateDataTimer(0.1, ResetGlovesTimer2, dpack);
+		dpack.WriteCell(client);
+		dpack.WriteCell(activeWeapon);
+		dpack.WriteString(arms);
+	}
+	int ent = GetEntPropEnt(client, Prop_Send, "m_hMyWearables");
+	if(ent != -1)
+	{
+		AcceptEntityInput(ent, "KillHierarchy");
+	}
+	SetEntPropString(client, Prop_Send, "m_szArmsModel", arms);
+}
+
+public Action ResetGlovesTimer2(Handle timer, DataPack pack)
+{
+	char model[128];
+	ResetPack(pack);
+	int clientIndex = pack.ReadCell();
+	int activeWeapon = pack.ReadCell();
+	pack.ReadString(model, 128);
+	
+	if(IsClientInGame(clientIndex))
+	{
+		SetEntPropString(clientIndex, Prop_Send, "m_szArmsModel", model);
+		
+		if(IsValidEntity(activeWeapon)) SetEntPropEnt(clientIndex, Prop_Send, "m_hActiveWeapon", activeWeapon);
+	}
 }

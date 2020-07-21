@@ -32,9 +32,10 @@ public void SQL_CheckDbQuery(Database hDatabase, DBResultSet hResults, const cha
 		SQL_EscapeString(g_hDatabase, szName, szSafeName, sizeof(szSafeName));
 		int wins = 0;
 		int infected = 0;
+		int infectionban = 0;
 		int killedzm = 0;
 		
-		g_hDatabase.Format(szQuery, sizeof(szQuery), "INSERT INTO ze_premium_sql (lastname, steamid, humanwins, infected, killedzm) VALUES ('%s', '%s', '%i', '%i', '%i')", szSafeName, szSteamId, wins, infected, killedzm);
+		g_hDatabase.Format(szQuery, sizeof(szQuery), "INSERT INTO ze_premium_sql (lastname, steamid, humanwins, infected, killedzm, infectionban) VALUES ('%s', '%s', '%i', '%i', '%i', '%i')", szSafeName, szSteamId, wins, infected, killedzm, infectionban);
 		g_hDatabase.Query(SQL_Error, szQuery);
 	}
 }

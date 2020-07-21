@@ -99,6 +99,7 @@ bool g_bFirstInfected[MAXPLAYERS + 1] = false;
 bool g_bWasFirstInfected[MAXPLAYERS + 1];
 bool g_bNoRespawn[MAXPLAYERS + 1] = false;
 bool g_bAntiDisconnect[MAXPLAYERS + 1] = false;
+char Zombie_Arms[MAXPLAYERS + 1][PLATFORM_MAX_PATH + 1];
 int i_Riotround;
 int i_SpecialRound;
 
@@ -112,6 +113,8 @@ Handle H_Respawntimer[MAXPLAYERS + 1];
 
 //GAME
 int i_Infection;
+int i_waitingforplayers;
+bool g_bWaitingForPlayer = false;
 bool g_bRoundStarted = false;
 bool g_bPause = false;
 int i_respawn[MAXPLAYERS + 1];

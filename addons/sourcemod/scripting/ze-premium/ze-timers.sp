@@ -3,9 +3,21 @@ public Action FirstInfection(Handle timer)
 	int numberofplayers = GetTeamClientCount(2) + GetTeamClientCount(3);
 	if (GameRules_GetProp("m_bWarmupPeriod") != 1)
 	{
-		if(g_bPause == false && numberofplayers > 0)
+		if(g_bPause == false && numberofplayers > 2)
 		{
 			i_Infection--;
+			if(g_bWaitingForPlayer == true)
+			{
+				g_bWaitingForPlayer = false;
+				CS_TerminateRound(5.0, CSRoundEnd_Draw, true);
+			}
+		}
+		else if(numberofplayers < 2)
+		{
+			if(g_bWaitingForPlayer == false)
+			{
+				g_bWaitingForPlayer = true;
+			}
 		}
 	}
 	
@@ -17,33 +29,51 @@ public Action FirstInfection(Handle timer)
 		{
 			if (IsValidClient(i) && !IsFakeClient(i))
 			{
-				int soucet = GetTeamClientCount(2) + GetTeamClientCount(3);
 				int numberinfected;
-				if(soucet < 4)
+				if(numberofplayers < 4)
 				{
 					numberinfected = 1;
 				}
 				else
 				{
-					numberinfected = soucet / 4;
+					numberinfected = numberofplayers / 4;
 				}
-				float percent = float(soucet) / 100;
+				float percent = float(numberofplayers) / 100;
 				float newpercent = float(numberinfected) / percent;
 				SetHudTextParams(-1.0, 0.1, 1.02, 0, 255, 0, 255, 0, 0.0, 0.0, 0.0);
-				if(i_infectionban[i] > 0)
+				if(numberofplayers > 2)
 				{
-					ShowHudText(i, -1, "First infected will be: %i sec\nYou will be infected [YOU HAVE: %i INFECTION BANS]", i_Infection, i_infectionban[i]);
-				}
-				else
-				{
-					if(g_bWasFirstInfected[i] == true)
+					if(i_infectionban[i] > 0)
 					{
-						ShowHudText(i, -1, "First infected will be: %i sec\nChance to be infected is: +0 percent", i_Infection);
+						ShowHudText(i, -1, "First infected will be: %i sec\nYou will be infected [YOU HAVE: %i INFECTION BANS]", i_Infection, i_infectionban[i]);
 					}
 					else
 					{
-						ShowHudText(i, -1, "First infected will be: %i sec\nChance to be infected is: +%.1f percent", i_Infection, newpercent);
+						if(g_bWasFirstInfected[i] == true)
+						{
+							ShowHudText(i, -1, "First infected will be: %i sec\nChance to be infected is: +0 percent", i_Infection);
+						}
+						else
+						{
+							ShowHudText(i, -1, "First infected will be: %i sec\nChance to be infected is: +%.1f percent", i_Infection, newpercent);
+						}
 					}
+				}
+				else
+				{
+					i_waitingforplayers++;
+					char text[14];
+					switch(i_waitingforplayers)
+					{
+						case 1: Format(text, sizeof(text), ".");
+						case 2: Format(text, sizeof(text), "..");
+						case 3: 
+						{
+							Format(text, sizeof(text), "...");
+							i_waitingforplayers = 0;
+						}
+					}
+					ShowHudText(i, -1, "Waiting for players%s\nPlayer on server: %i/3", text, numberofplayers);
 				}
 				if(g_bInfected[i] == false)
 				{
@@ -75,15 +105,14 @@ public Action FirstInfection(Handle timer)
 				SetEntProp(i, Prop_Data, "m_takedamage", 2, 1);
 			}
 		}
-		int soucet = GetTeamClientCount(2) + GetTeamClientCount(3);
 		int numberinfected;
-		if(soucet < 4)
+		if(numberofplayers < 4)
 		{
 			numberinfected = 1;
 		}
 		else
 		{
-			numberinfected = soucet / 4;
+			numberinfected = numberofplayers / 4;
 		}
 		int infection;
 		int firstinfected;
