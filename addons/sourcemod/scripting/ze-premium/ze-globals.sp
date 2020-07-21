@@ -58,10 +58,9 @@ ConVar g_cZEZMwinmodelVtf;
 ConVar g_cZEHUMANwinmodelVmt;
 ConVar g_cZEHUMANwinmodelVtf;
 
-char g_sZEConfig[PLATFORM_MAX_PATH];
-char g_sZEConfig2[PLATFORM_MAX_PATH];
+char g_sZEConfig[PLATFORM_MAX_PATH], g_sZEConfig2[PLATFORM_MAX_PATH], g_sZEConfig3[PLATFORM_MAX_PATH];
 
-KeyValues kvZombies, kvHumans;
+KeyValues kvZombies, kvHumans, kvWeapons;
 
 Database g_hDatabase;
 

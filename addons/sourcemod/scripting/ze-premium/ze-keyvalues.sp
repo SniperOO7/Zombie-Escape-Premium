@@ -319,6 +319,186 @@ void SetPlayerAsHuman(int client)
 	SetEntPropFloat(client, Prop_Data, "m_flLaggedMovementValue", fhumanSpeed);
 }
 
+public Action CMD_WeaponsRifle(int client, int args)
+{
+	if(g_bInfected[client] == false)
+	{
+		Menu zmmenu = new Menu(MenuHandler_WeaponsRifle);
+		SetMenuTitle(zmmenu, "Rifle Guns:");
+	 	
+	 	kvWeapons.Rewind();
+	 	if (!kvWeapons.JumpToKey("Rifles"))
+	 		return Plugin_Handled;
+	 	
+		if (!kvWeapons.GotoFirstSubKey())
+			return Plugin_Handled;
+	 
+		char ClassID[32];
+		char name[150];
+		do
+		{
+			kvWeapons.GetSectionName(ClassID, sizeof(ClassID));
+			kvWeapons.GetString("name", name, sizeof(name));
+			zmmenu.AddItem(ClassID, name);
+		} while (kvWeapons.GotoNextKey());
+	 
+		zmmenu.Display(client, 0);
+	}
+	return Plugin_Continue;
+}
+
+public int MenuHandler_WeaponsRifle(Menu menu, MenuAction action, int client, int item) 
+{
+	switch(action)
+	{
+		case MenuAction_Select:
+		{
+			char info[32];
+			GetMenuItem(menu, item, info, sizeof(info));
+			
+			Primary_Gun[client] = info;
+			CPrintToChat(client, " \x04[ZE-Weapons]\x01 %t", "chosen_gun", Primary_Gun[client]);
+			CPrintToChat(client, " \x04[ZE-Weapons]\x01 %t", "get_the_gun");
+			openWeapons(client);
+		}
+	}
+}
+
+public Action CMD_WeaponsHeavy(int client, int args)
+{
+	if(g_bInfected[client] == false)
+	{
+		Menu zmmenu = new Menu(MenuHandler_WeaponsHeavy);
+		SetMenuTitle(zmmenu, "Heavy Guns:");
+	 	
+	 	kvWeapons.Rewind();
+	 	if (!kvWeapons.JumpToKey("Heavyguns"))
+	 		return Plugin_Handled;
+	 	
+		if (!kvWeapons.GotoFirstSubKey())
+			return Plugin_Handled;
+	 
+		char ClassID[32];
+		char name[150];
+		do
+		{
+			kvWeapons.GetSectionName(ClassID, sizeof(ClassID));
+			kvWeapons.GetString("name", name, sizeof(name));
+			zmmenu.AddItem(ClassID, name);
+		} while (kvWeapons.GotoNextKey());
+	 
+		zmmenu.Display(client, 0);
+	}
+	return Plugin_Continue;
+}
+
+public int MenuHandler_WeaponsHeavy(Menu menu, MenuAction action, int client, int item) 
+{
+	switch(action)
+	{
+		case MenuAction_Select:
+		{
+			char info[32];
+			GetMenuItem(menu, item, info, sizeof(info));
+			
+			Primary_Gun[client] = info;
+			CPrintToChat(client, " \x04[ZE-Weapons]\x01 %t", "chosen_gun", Primary_Gun[client]);
+			CPrintToChat(client, " \x04[ZE-Weapons]\x01 %t", "get_the_gun");
+			openWeapons(client);
+		}
+	}
+}
+
+public Action CMD_WeaponsSmg(int client, int args)
+{
+	if(g_bInfected[client] == false)
+	{
+		Menu zmmenu = new Menu(MenuHandler_WeaponsSmg);
+		SetMenuTitle(zmmenu, "SMG Guns:");
+	 	
+	 	kvWeapons.Rewind();
+	 	if (!kvWeapons.JumpToKey("Smg"))
+	 		return Plugin_Handled;
+	 	
+		if (!kvWeapons.GotoFirstSubKey())
+			return Plugin_Handled;
+	 
+		char ClassID[32];
+		char name[150];
+		do
+		{
+			kvWeapons.GetSectionName(ClassID, sizeof(ClassID));
+			kvWeapons.GetString("name", name, sizeof(name));
+			zmmenu.AddItem(ClassID, name);
+		} while (kvWeapons.GotoNextKey());
+	 
+		zmmenu.Display(client, 0);
+	}
+	return Plugin_Continue;
+}
+
+public int MenuHandler_WeaponsSmg(Menu menu, MenuAction action, int client, int item) 
+{
+	switch(action)
+	{
+		case MenuAction_Select:
+		{
+			char info[32];
+			GetMenuItem(menu, item, info, sizeof(info));
+			
+			Primary_Gun[client] = info;
+			CPrintToChat(client, " \x04[ZE-Weapons]\x01 %t", "chosen_gun", Primary_Gun[client]);
+			CPrintToChat(client, " \x04[ZE-Weapons]\x01 %t", "get_the_gun");
+			openWeapons(client);
+		}
+	}
+}
+
+public Action CMD_WeaponsPistols(int client, int args)
+{
+	if(g_bInfected[client] == false)
+	{
+		Menu zmmenu = new Menu(MenuHandler_WeaponsPistols);
+		SetMenuTitle(zmmenu, "Pistols Guns:");
+	 	
+	 	kvWeapons.Rewind();
+	 	if (!kvWeapons.JumpToKey("Pistols"))
+	 		return Plugin_Handled;
+	 	
+		if (!kvWeapons.GotoFirstSubKey())
+			return Plugin_Handled;
+	 
+		char ClassID[32];
+		char name[150];
+		do
+		{
+			kvWeapons.GetSectionName(ClassID, sizeof(ClassID));
+			kvWeapons.GetString("name", name, sizeof(name));
+			zmmenu.AddItem(ClassID, name);
+		} while (kvWeapons.GotoNextKey());
+	 
+		zmmenu.Display(client, 0);
+	}
+	return Plugin_Continue;
+}
+
+public int MenuHandler_WeaponsPistols(Menu menu, MenuAction action, int client, int item) 
+{
+	switch(action)
+	{
+		case MenuAction_Select:
+		{
+			char info[32];
+			GetMenuItem(menu, item, info, sizeof(info));
+			
+			Secondary_Gun[client] = info;
+			CPrintToChat(client, " \x04[ZE-Weapons]\x01 %t", "chosen_gun", Secondary_Gun[client]);
+			CPrintToChat(client, " \x04[ZE-Weapons]\x01 %t", "get_the_gun");
+			openWeapons(client);
+		}
+	}
+}
+
 public bool HasPlayerFlags(int client, char flags[40])
 {
 	
