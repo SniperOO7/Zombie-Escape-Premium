@@ -3,7 +3,7 @@
 #define DEBUG
 
 #define PLUGIN_AUTHOR "Sniper007"
-#define PLUGIN_VERSION "6.0"
+#define PLUGIN_VERSION "6.5"
 
 #include <sourcemod>
 #include <sdktools>
@@ -102,6 +102,8 @@ public void OnPluginStart()
 	g_cZEZMwinmodelVtf = CreateConVar("sm_ze_zombie_win_material_vtf", "materials/ze_premium/zombiewin.vtf", "Model for zombie win material sprite (VTF)");
 	g_cZEHUMANwinmodelVmt = CreateConVar("sm_ze_human_win_material_vmt", "materials/ze_premium/humanwin.vmt", "Model for human win material sprite (VMT)");
 	g_cZEHUMANwinmodelVtf = CreateConVar("sm_ze_human_win_material_vtf", "materials/ze_premium/humanwin.vtf", "Model for human win material sprite (VTF)");
+	g_cZEHUMANwinmodel = CreateConVar("sm_ze_human_win_material", "ze_premium/humanwin", "Model for human win material sprite (DON'T TYPE .VMT OF .VTF)");
+	g_cZEZMwinmodel = CreateConVar("sm_ze_zombie_win_material", "ze_premium/zombiewin", "Model for zombie win material sprite (DON'T TYPE .VMT OF .VTF)");
 	
 	g_cZENemesis = CreateConVar("sm_ze_nemesis", "10", "How much chance in percent to first zombie will be nemesis, 0 = disabled");
 	g_cZENemesisModel = CreateConVar("sm_ze_nemesis_model", "models/player/custom_player/ventoz/marauder/marauder.mdl", "Model of Nemesis");
@@ -235,6 +237,8 @@ public void OnMapStart()
 	g_cZEZMwinmodelVtf.GetString(ZMWINSVTF, sizeof(ZMWINSVTF));
 	g_cZEHUMANwinmodelVmt.GetString(HUMANWINS, sizeof(HUMANWINS));
 	g_cZEHUMANwinmodelVtf.GetString(HUMANWINSVTF, sizeof(HUMANWINSVTF));
+	g_cZEHUMANwinmodel.GetString(HUMANWINSMAT, sizeof(HUMANWINSMAT));
+	g_cZEZMwinmodel.GetString(ZMWINSMAT, sizeof(ZMWINSMAT));
 	
 	PrecacheModel(HUMANMODEL);
 	PrecacheModel(NEMESISMODEL);
@@ -466,15 +470,15 @@ public void OnRoundEnd(Handle event, char[] name, bool dontBroadcast)
 	i_binfnade = 0;
 	i_waitingforplayers = 0;
 	int winner_team = GetEventInt(event, "winner");
-	/*
+	
 	if(winner_team == 2)
 	{
-		ShowOverlayAll(ZMWINSVTF, 4.0);
+		ShowOverlayAll(ZMWINSMAT, 4.0);
 	}
 	else if(winner_team == 3)
 	{
-		ShowOverlayAll(HUMANWINSVTF, 4.0);
-	}*/
+		ShowOverlayAll(HUMANWINSMAT, 4.0);
+	}
 	
 	for (int i = 1; i <= MaxClients; i++)
 	{
