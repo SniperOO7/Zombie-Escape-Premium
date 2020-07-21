@@ -3,7 +3,7 @@
 #define DEBUG
 
 #define PLUGIN_AUTHOR "Sniper007"
-#define PLUGIN_VERSION "5.0"
+#define PLUGIN_VERSION "5.5"
 
 #include <sourcemod>
 #include <sdktools>
@@ -48,6 +48,11 @@ public void OnPluginStart()
 	
 	RegConsoleCmd("sm_respawn", CMD_Respawn);
 	RegConsoleCmd("sm_r", CMD_Respawn);
+	
+	RegConsoleCmd("sm_rifle", CMD_WeaponsRifle);
+	RegConsoleCmd("sm_heavygun", CMD_WeaponsHeavy);
+	RegConsoleCmd("sm_smg", CMD_WeaponsSmg);
+	RegConsoleCmd("sm_pistols", CMD_WeaponsPistols);
 	
 	RegConsoleCmd("sm_get", CMD_GetGun);
 	RegConsoleCmd("sm_weapon", CMD_Weapon);
@@ -136,6 +141,7 @@ public void OnPluginStart()
 	
 	BuildPath(Path_SM, g_sZEConfig, sizeof(g_sZEConfig), "configs/ze_premium/zombies_classes.cfg");
 	BuildPath(Path_SM, g_sZEConfig2, sizeof(g_sZEConfig2), "configs/ze_premium/humans_classes.cfg");
+	BuildPath(Path_SM, g_sZEConfig3, sizeof(g_sZEConfig3), "configs/ze_premium/weapons.cfg");
 	
 	CreateTimer(1.0, HUD, _, TIMER_REPEAT);
 	CreateTimer(5.0, PointsCheck, _, TIMER_REPEAT);
@@ -151,8 +157,10 @@ public void OnConfigsExecuted()
 	
 	kvZombies = new KeyValues("zombies_classes");
 	kvHumans = new KeyValues("humans_classes");
+	kvWeapons = new KeyValues("Weapons");
 	kvZombies.ImportFromFile(g_sZEConfig);
 	kvHumans.ImportFromFile(g_sZEConfig2);
+	kvWeapons.ImportFromFile(g_sZEConfig3);
 }
 
 public void SQL_Error(Database hDatabase, DBResultSet hResults, const char[] szError, int iData)
@@ -527,7 +535,7 @@ public Action CMD_Weapon(int client, int args)
 {
 	if (IsValidClient(client))
 	{
-		if (GetClientTeam(client) == CS_TEAM_CT || i_Infection > 0)
+		if (g_bInfected[client] == false)
 		{
 			openWeapons(client);
 		}
@@ -579,14 +587,14 @@ public Action CMD_Respawn(int client, int args)
 {
 	if (IsValidClient(client))
 	{
-		if (i_Infection > 0)
+		if (i_Infection > 0 && g_bInfected[client] == false)
 		{
 			CS_RespawnPlayer(client);
 			CPrintToChat(client, " \x04[ZE-Respawn]\x01 %t", "player_respawned");
 		}
 		else
 		{
-			if(GetClientTeam(client) == CS_TEAM_T)
+			if(g_bInfected[client] == true && i_Infection == 0)
 			{
 				if(i_respawn[client] < 3)
 				{
@@ -621,7 +629,7 @@ public Action CMD_P90(int client, int args)
 {
 	if (IsValidClient(client))
 	{
-		if (i_Infection > 0 || GetClientTeam(client) == CS_TEAM_CT)
+		if (g_bInfected[client] == false)
 		{
 			if (i_Maximum_Choose[client] < g_cZEMaximumUsage.IntValue)
 			{
@@ -646,7 +654,7 @@ public Action CMD_Bizon(int client, int args)
 {
 	if (IsValidClient(client))
 	{
-		if (i_Infection > 0 || GetClientTeam(client) == CS_TEAM_CT)
+		if (g_bInfected[client] == false)
 		{
 			if (i_Maximum_Choose[client] < g_cZEMaximumUsage.IntValue)
 			{
@@ -671,7 +679,7 @@ public Action CMD_Negev(int client, int args)
 {
 	if (IsValidClient(client))
 	{
-		if (i_Infection > 0 || GetClientTeam(client) == CS_TEAM_CT)
+		if (g_bInfected[client] == false)
 		{
 			if (i_Maximum_Choose[client] < g_cZEMaximumUsage.IntValue)
 			{
@@ -694,7 +702,7 @@ public Action CMD_Negev(int client, int args)
 
 public Action CMD_GetGun(int client, int args)
 {
-	if (IsValidClient(client) && GetClientTeam(client) == CS_TEAM_CT || i_Infection > 0)
+	if (IsValidClient(client) && g_bInfected[client] == false)
 	{
 		if (Primary_Gun[client][0] == 'w' || Secondary_Gun[client][0] == 'w')
 		{
