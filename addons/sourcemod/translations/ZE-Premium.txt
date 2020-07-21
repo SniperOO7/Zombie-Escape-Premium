@@ -50,7 +50,7 @@
 
 	"infected_disconnected"
 	{
-		"#format"	"{1:N}, {2:i}"
+		"#format"	"{1:N},{2:i}"
 		"en"		"Infected zombie {green}{1}{default} has disconnect from server, he recived punishment on {purple}{2}{default} rounds!"
 	}
 	
@@ -151,13 +151,13 @@
 	
 	"swaped_to_zombies"
 	{
-		"#format"	"{1:N}, {2:N}"
+		"#format"	"{1:N},{2:N}"
 		"en"		"Player {green}{1}{default} was swaped to ZOMBIES by {purple}{2}{default} admin!"
 	}
 	
 	"swaped_to_humans"
 	{
-		"#format"	"{1:N}, {2:N}"
+		"#format"	"{1:N},{2:N}"
 		"en"		"Player {green}{1}{default} was swaped to HUMANS by {purple}{2}{default} admin!"
 	}
 	
@@ -185,7 +185,7 @@
 	
 	"infection_ban"
 	{
-		"#format"	"{1:N}, {2:i}"
+		"#format"	"{1:N},{2:i}"
 		"en"		"Player {green}{1}{default} got infection ban on {purple}{2}{default} rounds!"
 	}
 	
