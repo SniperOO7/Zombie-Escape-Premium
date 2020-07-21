@@ -272,6 +272,8 @@ void SetPlayerAsZombie(int client)
 	
 	SetEntityHealth(client, iZmHealth);
 	SetEntityGravity(client, fZmGravity);
+	if(!IsModelPrecached(zmModel))
+		PrecacheModel(zmModel, true);
 	SetEntityModel(client, zmModel);
 	SetEntPropFloat(client, Prop_Data, "m_flLaggedMovementValue", fZmSpeed);
 }
@@ -314,17 +316,34 @@ void SetPlayerAsHuman(int client)
 	int ihumanHealth = StringToInt(humanHeath);
 	int ihumanProtect = StringToInt(humanProtect);
 	Selected_Class_Human[client] = humanName;
+	char NameOfFirenade[18];
+	char NameOfFreezenade[18];
+	Format(NameOfFirenade, sizeof(NameOfFirenade), "FireNade");
+	Format(NameOfFreezenade, sizeof(NameOfFreezenade), "FreezeNade");
 	
 	SetEntityHealth(client, ihumanHealth);
 	if(humanItem[0] != '-')
 	{
-		GivePlayerItem(client, humanItem);
+		if (StrEqual(humanItem, NameOfFirenade, false))
+		{
+			FireNade(client);
+		}
+		else if (StrEqual(humanItem, NameOfFreezenade, false))
+		{
+			FreezeNade(client);
+		}
+		else
+		{
+			GivePlayerItem(client, humanItem);
+		}
 	}
 	if(ihumanProtect > 0)
 	{
 		i_protection[client] = ihumanProtect;
 	}
 	SetEntityGravity(client, fhumanGravity);
+	if(!IsModelPrecached(humanModel))
+		PrecacheModel(humanModel, true);
 	SetEntityModel(client, humanModel);
 	SetEntPropFloat(client, Prop_Data, "m_flLaggedMovementValue", fhumanSpeed);
 }

@@ -326,6 +326,19 @@ void ZombiePain(int victim)
 	}	
 }
 
+//VOID FOR SHOP SYSTEM
+void FireNade(int client)
+{
+	g_bFireHE[client] = true;
+	GivePlayerItem(client, "weapon_hegrenade");
+}
+
+void FreezeNade(int client)
+{
+	g_bFreezeFlash[client] = true;
+	GivePlayerItem(client, "weapon_decoy");
+}
+
 public Action SoundHook(int clients[64], int &numClients, char sound[PLATFORM_MAX_PATH], int &entity, int &channel, float &volume, int &level, int &pitch, int &flags)
 {
 	if(g_cZEZombieSounds.IntValue > 0)
@@ -661,7 +674,7 @@ stock bool RemoveWeaponBySlot(int iClient, int iSlot)
     }
     return false;
 } 
-/*
+
 // Show overlay to all clients with lifetime | 0.0 = no auto remove
 stock void ShowOverlayAll(char[] path, float lifetime)
 {
@@ -685,4 +698,4 @@ stock Action DeleteOverlay(Handle timer, any userid)
 		return;
 	
 	ClientCommand(client, "r_screenoverlay \"\"");
-}*/
+}

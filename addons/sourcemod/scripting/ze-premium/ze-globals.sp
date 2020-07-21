@@ -57,6 +57,8 @@ ConVar g_cZEZMwinmodelVmt;
 ConVar g_cZEZMwinmodelVtf;
 ConVar g_cZEHUMANwinmodelVmt;
 ConVar g_cZEHUMANwinmodelVtf;
+ConVar g_cZEHUMANwinmodel;
+ConVar g_cZEZMwinmodel;
 
 char g_sZEConfig[PLATFORM_MAX_PATH], g_sZEConfig2[PLATFORM_MAX_PATH], g_sZEConfig3[PLATFORM_MAX_PATH];
 
@@ -74,6 +76,7 @@ char DEFEND[128], DEFENDVTF[128];
 char FOLLOWME[128], FOLLOWMEVTF[128];
 char ZMWINS[128], HUMANWINS[128];
 char ZMWINSVTF[128], HUMANWINSVTF[128];
+char HUMANWINSMAT[128], ZMWINSMAT[128];
 
 //GUNS
 char Primary_Gun[MAXPLAYERS + 1][64];
