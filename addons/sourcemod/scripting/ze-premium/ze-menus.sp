@@ -69,6 +69,10 @@ public int mZeHandler(Menu menu, MenuAction action, int client, int index)
 				}
 			}
 		}
+		case MenuAction_End:
+		{
+			delete menu;
+		}
 	}
 }
 
@@ -170,6 +174,10 @@ public int mZeGunsHandler(Menu menu, MenuAction action, int client, int index)
 				}
 			}
 		}
+		case MenuAction_End:
+		{
+			delete menu;
+		}
 	}
 }
 
@@ -207,6 +215,10 @@ public int mZeClassHandler(Menu menu, MenuAction action, int client, int index)
 				}
 			}
 		}
+		case MenuAction_End:
+		{
+			delete menu;
+		}
 	}
 }
 
@@ -223,12 +235,26 @@ void openShop(int client)
 	menu.AddItem("menu1", text);
 	Format(text, sizeof(text), "Fire Grenade [%i $] [HUMAN]", g_cZEHeNade.IntValue);
 	menu.AddItem("menu2", text);
-	Format(text, sizeof(text), "Freeze Grenade [%i $] [HUMAN]", g_cZEFlashNade.IntValue);
-	menu.AddItem("menu3", text);
+	Format(text, sizeof(text), "[VIP] Freeze Grenade [%i $] [HUMAN]", g_cZEFlashNade.IntValue);
+	if(IsClientVIP(client))
+	{
+		menu.AddItem("menu3", text);
+	}
+	else
+	{
+		menu.AddItem("menu3", text, ITEMDRAW_DISABLED);
+	}
 	Format(text, sizeof(text), "Molotov [%i $] [HUMAN]", g_cZEMolotov.IntValue);
 	menu.AddItem("menu4", text);
-	Format(text, sizeof(text), "Infetion Grenade [%i $] [ZOMBIE]", g_cZEInfnade.IntValue);
-	menu.AddItem("menu5", text);
+	Format(text, sizeof(text), "[VIP] Infection Grenade [%i $] [ZOMBIE]", g_cZEInfnade.IntValue);
+	if(IsClientVIP(client))
+	{
+		menu.AddItem("menu5", text);
+	}
+	else
+	{
+		menu.AddItem("menu5", text, ITEMDRAW_DISABLED);
+	}
 	
 	menu.Display(client, MENU_TIME_FOREVER);
 }
@@ -247,7 +273,7 @@ public int mZeShopHandler(Menu menu, MenuAction action, int client, int index)
 				
 				char szBoughtItem[64];
 				
-				if(GetClientTeam(client) == CS_TEAM_CT || i_Infection > 0 && IsPlayerAlive(client))
+				if(g_bInfected[client] == false)
 				{	
 					if (StrEqual(szItem, "menu1"))
 					{
@@ -352,6 +378,10 @@ public int mZeShopHandler(Menu menu, MenuAction action, int client, int index)
 				}
 			}
 		}
+		case MenuAction_End:
+		{
+			delete menu;
+		}
 	}
 }
 
@@ -434,6 +464,10 @@ public int mZeAdminHandler(Menu menu, MenuAction action, int client, int index)
 				}
 			}
 		}
+		case MenuAction_End:
+		{
+			delete menu;
+		}
 	}
 }
 
@@ -501,6 +535,10 @@ public int mZeLeaderHandler(Menu menu, MenuAction action, int client, int index)
 					}
 				}
 			}
+		}
+		case MenuAction_End:
+		{
+			delete menu;
 		}
 	}
 }
@@ -603,6 +641,10 @@ public int mZeLeaderSpritesHandler(Menu menu, MenuAction action, int client, int
 					CReplyToCommand(client, " \x04[ZE-Leader]\x01 %t", "no_leader");
 				}
 			}
+		}
+		case MenuAction_End:
+		{
+			delete menu;
 		}
 	}
 }
@@ -907,6 +949,10 @@ public int mZeInfectionLongHandler(Menu menu, MenuAction action, int client, int
 					openInfectionBan(client);
 				}
 			}
+		}
+		case MenuAction_End:
+		{
+			delete menu;
 		}
 	}
 }

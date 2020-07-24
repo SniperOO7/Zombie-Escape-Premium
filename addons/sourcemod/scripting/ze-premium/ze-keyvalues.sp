@@ -100,7 +100,7 @@ public Action CMD_ZMClass(int client, int args)
 	if(GetClientTeam(client) == CS_TEAM_T || GetClientTeam(client) == CS_TEAM_CT)
 	{
 		Menu zmmenu = new Menu(MenuHandler_ZombieClass);
-		SetMenuTitle(zmmenu, "Zombie class");
+		SetMenuTitle(zmmenu, "Zombie class (%s)", Selected_Class_Zombie[client]);
 	 	
 	 	kvZombies.Rewind();
 		if (!kvZombies.GotoFirstSubKey())
@@ -158,6 +158,10 @@ public int MenuHandler_ZombieClass(Menu menu, MenuAction action, int client, int
 				}
 			}
 		}
+		case MenuAction_End:
+		{
+			delete menu;
+		}
 	}
 }
 
@@ -166,7 +170,7 @@ public Action CMD_HumanClass(int client, int args)
 	if(GetClientTeam(client) == CS_TEAM_T || GetClientTeam(client) == CS_TEAM_CT)
 	{
 		Menu zmmenu = new Menu(MenuHandler_HumanClass);
-		SetMenuTitle(zmmenu, "Human class");
+		SetMenuTitle(zmmenu, "Human class (%s)", Selected_Class_Human[client]);
 	 	
 	 	kvHumans.Rewind();
 		if (!kvHumans.GotoFirstSubKey())
@@ -224,6 +228,10 @@ public int MenuHandler_HumanClass(Menu menu, MenuAction action, int client, int 
 				}
 			}
 		}
+		case MenuAction_End:
+		{
+			delete menu;
+		}
 	}
 }
 
@@ -237,6 +245,7 @@ void SetPlayerAsZombie(int client)
 		SetEntityHealth(client, g_cZEZombieHP.IntValue);
 		SetEntityModel(client, ZOMBIEMODEL);
 		SetEntPropFloat(client, Prop_Data, "m_flLaggedMovementValue", g_cZEZombieSpeed.FloatValue);
+		Format(Selected_Class_Zombie[client], sizeof(Selected_Class_Zombie), "Default");
 		return;		
 	}
 		
@@ -289,11 +298,14 @@ void SetPlayerAsHuman(int client)
 		SetEntityModel(client, HUMANMODEL);
 		SetEntityGravity(client, 1.0);
 		SetEntPropFloat(client, Prop_Data, "m_flLaggedMovementValue", 1.0);	
+		CreateTimer(0.7, SetArms, client, TIMER_FLAG_NO_MAPCHANGE);
+		Format(Selected_Class_Human[client], sizeof(Selected_Class_Human), "Default");
 		return;		
 	}
 		
 	char humanName[100];
 	char humanItem[32];
+	char humanPower[45];
 	char humanProtect[10];
 	char humanGravity[10];
 	char humanSpeed[10];
@@ -303,6 +315,7 @@ void SetPlayerAsHuman(int client)
 	flags = "";
 	kvHumans.GetString("name", 			humanName, 		sizeof(humanName));
 	kvHumans.GetString("item", 			humanItem, 		sizeof(humanItem));
+	kvHumans.GetString("power", 		humanPower, 	sizeof(humanPower));
 	kvHumans.GetString("protection", 	humanProtect, 	sizeof(humanProtect));
 	kvHumans.GetString("gravity", 		humanGravity, 	sizeof(humanGravity));
 	kvHumans.GetString("speed", 		humanSpeed, 	sizeof(humanSpeed));
@@ -320,7 +333,9 @@ void SetPlayerAsHuman(int client)
 	char NameOfFreezenade[18];
 	Format(NameOfFirenade, sizeof(NameOfFirenade), "FireNade");
 	Format(NameOfFreezenade, sizeof(NameOfFreezenade), "FreezeNade");
+	Format(Human_Power[client], sizeof(Human_Power), "%s", humanPower);
 	
+	CreateTimer(0.7, SetArms, client, TIMER_FLAG_NO_MAPCHANGE);
 	SetEntityHealth(client, ihumanHealth);
 	if(humanItem[0] != '-')
 	{
@@ -390,6 +405,10 @@ public int MenuHandler_WeaponsRifle(Menu menu, MenuAction action, int client, in
 			CPrintToChat(client, " \x04[ZE-Weapons]\x01 %t", "get_the_gun");
 			openWeapons(client);
 		}
+		case MenuAction_End:
+		{
+			delete menu;
+		}
 	}
 }
 
@@ -434,6 +453,10 @@ public int MenuHandler_WeaponsHeavy(Menu menu, MenuAction action, int client, in
 			CPrintToChat(client, " \x04[ZE-Weapons]\x01 %t", "chosen_gun", Primary_Gun[client]);
 			CPrintToChat(client, " \x04[ZE-Weapons]\x01 %t", "get_the_gun");
 			openWeapons(client);
+		}
+		case MenuAction_End:
+		{
+			delete menu;
 		}
 	}
 }
@@ -480,6 +503,10 @@ public int MenuHandler_WeaponsSmg(Menu menu, MenuAction action, int client, int 
 			CPrintToChat(client, " \x04[ZE-Weapons]\x01 %t", "get_the_gun");
 			openWeapons(client);
 		}
+		case MenuAction_End:
+		{
+			delete menu;
+		}
 	}
 }
 
@@ -524,6 +551,10 @@ public int MenuHandler_WeaponsPistols(Menu menu, MenuAction action, int client, 
 			CPrintToChat(client, " \x04[ZE-Weapons]\x01 %t", "chosen_gun", Secondary_Gun[client]);
 			CPrintToChat(client, " \x04[ZE-Weapons]\x01 %t", "get_the_gun");
 			openWeapons(client);
+		}
+		case MenuAction_End:
+		{
+			delete menu;
 		}
 	}
 }
@@ -698,25 +729,50 @@ public void SetPlayerArms(int client, char[] arms)
 	
 	GetEntPropString(client, Prop_Send, "m_szArmsModel", currentmodel, sizeof(currentmodel));
 
-	int activeWeapon = GetEntPropEnt(client, Prop_Send, "m_hActiveWeapon");
-	if(activeWeapon != -1)
+	if(g_bInfected[client] == true)
 	{
-		SetEntPropEnt(client, Prop_Send, "m_hActiveWeapon", -1);
+		int activeWeapon = GetEntPropEnt(client, Prop_Send, "m_hActiveWeapon");
+		if(activeWeapon != -1)
+		{
+			SetEntPropEnt(client, Prop_Send, "m_hActiveWeapon", -1);
+		}
+		if(activeWeapon != -1)
+		{
+			DataPack dpack;
+			CreateDataTimer(0.1, ResetGlovesTimer2, dpack);
+			dpack.WriteCell(client);
+			dpack.WriteCell(activeWeapon);
+			dpack.WriteString(arms);
+		}
+		int ent = GetEntPropEnt(client, Prop_Send, "m_hMyWearables");
+		if(ent != -1)
+		{
+			AcceptEntityInput(ent, "KillHierarchy");
+		}
+		SetEntPropString(client, Prop_Send, "m_szArmsModel", arms);
 	}
-	if(activeWeapon != -1)
+	else
 	{
-		DataPack dpack;
-		CreateDataTimer(0.1, ResetGlovesTimer2, dpack);
-		dpack.WriteCell(client);
-		dpack.WriteCell(activeWeapon);
-		dpack.WriteString(arms);
+		int activeWeapon = GetEntPropEnt(client, Prop_Send, "m_hActiveWeapon");
+		if(activeWeapon != -1)
+		{
+			SetEntPropEnt(client, Prop_Send, "m_hActiveWeapon", -1);
+		}
+		if(activeWeapon != -1)
+		{
+			DataPack dpack;
+			CreateDataTimer(0.1, ResetGlovesTimer2, dpack);
+			dpack.WriteCell(client);
+			dpack.WriteCell(activeWeapon);
+			dpack.WriteString(DEFAULT_ARMS);
+		}
+		int ent = GetEntPropEnt(client, Prop_Send, "m_hMyWearables");
+		if(ent != -1)
+		{
+			AcceptEntityInput(ent, "KillHierarchy");
+		}
+		SetEntPropString(client, Prop_Send, "m_szArmsModel", DEFAULT_ARMS);
 	}
-	int ent = GetEntPropEnt(client, Prop_Send, "m_hMyWearables");
-	if(ent != -1)
-	{
-		AcceptEntityInput(ent, "KillHierarchy");
-	}
-	SetEntPropString(client, Prop_Send, "m_szArmsModel", arms);
 }
 
 public Action ResetGlovesTimer2(Handle timer, DataPack pack)

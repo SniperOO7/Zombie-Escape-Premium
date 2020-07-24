@@ -25,7 +25,6 @@ public void OnClientDisconnect(int client)
 	g_bFreezeFlash[client] = false;
 	g_bAntiDisconnect[client] = false;
 	g_bInfectNade[client] = false;
-	g_hCooldown[client] = false;
 }
 
 public void OnClientPutInServer(int client)
@@ -41,7 +40,6 @@ public void OnClientPutInServer(int client)
 	g_bFreezeFlash[client] = false;
 	g_bNoRespawn[client] = false;
 	g_bAntiDisconnect[client] = false;
-	g_hCooldown[client] = false;
 	g_bInfectNade[client] = false;
 	i_zclass[client] = 0;
 	i_respawn[client] = 0;

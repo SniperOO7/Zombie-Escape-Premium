@@ -79,3 +79,21 @@ void Forward_SetAnotherRespawn(int client, int respawn)
 		g_bNoRespawn[client] = false;
 	}
 }
+
+public int Native_GetPower(Handle plugin, int argc)
+{
+	int client = GetNativeCell(1);
+	if (!IsValidClient(client))
+	{
+		return -1;
+	}
+	
+	return Forward_GetPower(client);
+}
+
+int Forward_GetPower(int client)
+{
+	int power = 0;
+	power = i_Power[client];
+	return power;
+}

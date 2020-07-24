@@ -1,4 +1,5 @@
 #define FREEZE_SOUND "ze_premium/freeze.mp3"
+#define DEFAULT_ARMS "models/weapons/ct_arms_gign.mdl"
 
 //GRENADES
 #define FragColor 	{255,75,75,255}
@@ -14,6 +15,7 @@ Handle gF_ClientHumanPost;
 
 //TIMERS
 Handle H_FirstInfection;
+Handle H_AmmoTimer[MAXPLAYERS + 1];
 
 int g_iBeamSprite;
 int g_iHaloSprite;
@@ -59,6 +61,10 @@ ConVar g_cZEHUMANwinmodelVmt;
 ConVar g_cZEHUMANwinmodelVtf;
 ConVar g_cZEHUMANwinmodel;
 ConVar g_cZEZMwinmodel;
+ConVar g_cZEReloadingSound;
+ConVar g_cZEReloadingSoundType;
+ConVar g_cZEMinConnectedPlayers;
+ConVar g_cZEInfectionNadeEffect;
 
 char g_sZEConfig[PLATFORM_MAX_PATH], g_sZEConfig2[PLATFORM_MAX_PATH], g_sZEConfig3[PLATFORM_MAX_PATH];
 
@@ -110,19 +116,23 @@ int i_SpecialRound;
 int i_zclass[MAXPLAYERS + 1];
 int i_hclass[MAXPLAYERS + 1];
 int i_protection[MAXPLAYERS + 1];
+float f_causeddamage[MAXPLAYERS + 1];
 char Selected_Class_Human[MAXPLAYERS + 1][100];
 char Selected_Class_Zombie[MAXPLAYERS + 1][100];
+char Human_Power[MAXPLAYERS + 1][100];
 Handle H_Respawntimer[MAXPLAYERS + 1];
+bool g_bUltimate[MAXPLAYERS + 1] = false;
+int i_Power[MAXPLAYERS + 1];
 
 //GAME
 int i_Infection;
+int i_ToolsVelocity;
 int i_waitingforplayers;
 bool g_bWaitingForPlayer = false;
 bool g_bRoundStarted = false;
 bool g_bPause = false;
 int i_respawn[MAXPLAYERS + 1];
 int i_infectionban[MAXPLAYERS + 1];
-bool g_hCooldown[MAXPLAYERS + 1];
 
 int g_iSoundEnts[2048];
 int g_iNumSounds;

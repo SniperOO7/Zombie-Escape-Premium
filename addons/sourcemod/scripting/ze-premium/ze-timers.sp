@@ -3,7 +3,7 @@ public Action FirstInfection(Handle timer)
 	int numberofplayers = GetTeamClientCount(2) + GetTeamClientCount(3);
 	if (GameRules_GetProp("m_bWarmupPeriod") != 1)
 	{
-		if(g_bPause == false && numberofplayers > 2)
+		if(g_bPause == false && numberofplayers >= g_cZEMinConnectedPlayers.IntValue)
 		{
 			i_Infection--;
 			if(g_bWaitingForPlayer == true)
@@ -12,7 +12,7 @@ public Action FirstInfection(Handle timer)
 				CS_TerminateRound(5.0, CSRoundEnd_Draw, true);
 			}
 		}
-		else if(numberofplayers < 2)
+		else if(numberofplayers <= g_cZEMinConnectedPlayers.IntValue)
 		{
 			if(g_bWaitingForPlayer == false)
 			{
@@ -41,7 +41,7 @@ public Action FirstInfection(Handle timer)
 				float percent = float(numberofplayers) / 100;
 				float newpercent = float(numberinfected) / percent;
 				SetHudTextParams(-1.0, 0.1, 1.02, 0, 255, 0, 255, 0, 0.0, 0.0, 0.0);
-				if(numberofplayers > 2)
+				if(numberofplayers >= g_cZEMinConnectedPlayers.IntValue)
 				{
 					if(i_infectionban[i] > 0)
 					{
@@ -73,15 +73,15 @@ public Action FirstInfection(Handle timer)
 							i_waitingforplayers = 0;
 						}
 					}
-					ShowHudText(i, -1, "Waiting for players%s\nPlayer on server: %i/3", text, numberofplayers);
+					ShowHudText(i, -1, "Waiting for players%s\nPlayer on server: %i/%i", text, numberofplayers, g_cZEMinConnectedPlayers.IntValue);
 				}
 				if(g_bInfected[i] == false)
 				{
-					PrintHintText(i, "\n<font color='#FF4500'>CHOSEN GUN:</font>%s | %s\n<font color='#4169E1'>HUMAN CLASS:</font>%s", Primary_Gun[i], Secondary_Gun[i], Selected_Class_Human[i]);
+					PrintHintText(i, "\n<font class='fontSize-l'><font color='#FF4500'>CHOSEN GUN:</font>%s | %s", Primary_Gun[i], Secondary_Gun[i]);
 				}
 				else
 				{
-					PrintHintText(i, "\nYou will be respawned in: <font color='#00FF00'>%i</font> sec", i_Infection);
+					PrintHintText(i, "\n<font class='fontSize-l'>You will be respawned in: <font color='#00FF00'>%i</font> sec", i_Infection);
 				}
 			}
 		}
@@ -193,6 +193,10 @@ public Action FirstInfection(Handle timer)
 				}
 				CreateTimer(g_cZEInfectionTime.FloatValue, AntiDisconnect, firstinfected);
 				g_bAntiDisconnect[firstinfected] = true;
+				Call_StartForward(gF_ClientInfected);
+				Call_PushCell(firstinfected);
+				Call_PushCell(firstinfected);
+				Call_Finish();
 			}
 			else
 			{
@@ -228,6 +232,10 @@ public Action FirstInfection(Handle timer)
 				EmitSoundToAll("ze_premium/ze-respawn.mp3", user);
 				CreateTimer(g_cZEInfectionTime.FloatValue, AntiDisconnect, user);
 				g_bAntiDisconnect[user] = true;
+				Call_StartForward(gF_ClientInfected);
+				Call_PushCell(user);
+				Call_PushCell(user);
+				Call_Finish();
 			}
 		} 
 		while (infection < numberinfected);
@@ -292,14 +300,6 @@ public Action AntiDisconnect(Handle timer, int client)
 	if(IsValidClient(client))
 	{
 		g_bAntiDisconnect[client] = false;
-	}
-}
-
-public Action EndCooldown(Handle timer, int client)
-{
-	if(IsValidClient(client))
-	{
-		g_hCooldown[client] = false;
 	}
 }
 
@@ -454,4 +454,54 @@ public Action Delete(Handle timer, any entity)
 	{
 		AcceptEntityInput(entity, "kill");
 	}
+}
+
+public Action EndPower(Handle timer, int client)
+{
+	if (IsValidClient(client))
+	{
+		i_Power[client] = 0;
+		if (H_AmmoTimer[client] != null)
+		{
+			KillTimer(H_AmmoTimer[client]);
+			H_AmmoTimer[client] = null;	
+		}
+	}	
+}
+
+public Action PowerOfTimer(Handle timer, int client)
+{
+	if (IsValidClient(client))
+	{
+		if(i_Power[client] == 2)
+		{
+			float fPos[3];
+			GetClientAbsOrigin(client, fPos);
+			TE_SetupBeamRingPoint(fPos, 150.0, 10.0, g_iBeamSprite, g_iHaloSprite, 0, 10, 1.0, 4.0, 0.0, {255, 215, 0, 255}, 0, 0);
+			TE_SendToAll();
+			SetEntityHealth(client, GetClientHealth(client) + 5);
+			CheckPlayerRange(client);
+		}
+		else if(i_Power[client] == 3)
+		{
+			int Primary = GetPlayerWeaponSlot(client, CS_SLOT_PRIMARY);
+			if (IsValidEdict(Primary))
+			{
+				char SecondaryName[30];
+				GetEntityClassname(Primary, SecondaryName, sizeof(SecondaryName));
+				if (StrEqual(SecondaryName, "weapon_negev", false) || StrEqual(SecondaryName, "weapon_m249", false))
+				{
+					SetClipAmmo(client, Primary, 100);
+				}
+				else if (StrEqual(SecondaryName, "weapon_bizon", false) || StrEqual(SecondaryName, "weapon_p90", false))
+				{
+					SetClipAmmo(client, Primary, 50);
+				}
+				else
+				{
+					SetClipAmmo(client, Primary, 40);
+				}
+			}
+		}
+	}	
 }
