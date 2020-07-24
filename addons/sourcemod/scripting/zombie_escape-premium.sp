@@ -3,7 +3,7 @@
 #define DEBUG
 
 #define PLUGIN_AUTHOR "Sniper007"
-#define PLUGIN_VERSION "6.5"
+#define PLUGIN_VERSION "7.5"
 
 #include <sourcemod>
 #include <sdktools>
@@ -132,6 +132,7 @@ public void OnPluginStart()
 	g_cZEHeGrenadeEffect = CreateConVar("sm_ze_hegrenade_effect", "1", "1 = enable he fire grenade, 0 = disable");
 	g_cZEFlashbangEffect = CreateConVar("sm_ze_decoy_effect", "1", "1 = enable decoy freeze grenade, 0 = disable");
 	g_cZESmokeEffect = CreateConVar("sm_ze_smoke_effect", "1", "1 = enable smoke infect grenade, 0 = disable");
+	g_cZEInfectionNadeEffect = CreateConVar("sm_ze_infection_nade_effect", "1", "1 = infect player in place of infection, 0 = infect player and respawn them");
 	
 	g_cZEInfectionBans = CreateConVar("sm_ze_infection_bans", "2", "How many rounds ban player will get after he disconnected, when he is first zombie");
 	g_cZEInfectionTime = CreateConVar("sm_ze_infection_time", "10", "How long (sec) player have to be first zombie to don't get infection ban, after he disconnected");
@@ -141,6 +142,11 @@ public void OnPluginStart()
 	
 	g_cZEZombieSounds = CreateConVar("sm_ze_zombie_attack_sounds", "1", "1 = enable zombie attack sound, 0 = disable");
 	
+	g_cZEReloadingSound = CreateConVar("sm_ze_human_reloading_sound", "1", "1 = enable human reloading sound, 0 = disable");
+	g_cZEReloadingSoundType = CreateConVar("sm_ze_human_reloading_sound_type", "1", "1 = emit sound to all players, 0 = emit sound only to reloading player");
+	
+	g_cZEMinConnectedPlayers = CreateConVar("sm_ze_minimum_players", "2", "Minimum of connected players on server for start the game", _, true, 2.0, true, 6.0);
+	
 	BuildPath(Path_SM, g_sZEConfig, sizeof(g_sZEConfig), "configs/ze_premium/zombies_classes.cfg");
 	BuildPath(Path_SM, g_sZEConfig2, sizeof(g_sZEConfig2), "configs/ze_premium/humans_classes.cfg");
 	BuildPath(Path_SM, g_sZEConfig3, sizeof(g_sZEConfig3), "configs/ze_premium/weapons.cfg");
@@ -149,6 +155,7 @@ public void OnPluginStart()
 	CreateTimer(5.0, PointsCheck, _, TIMER_REPEAT);
 	
 	AddNormalSoundHook(SoundHook);
+	AddCommandListener(Command_PowerH, "+lookatweapon");
 	
 	AutoExecConfig(true, "ze_premium");
 }
@@ -199,6 +206,7 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 	CreateNative("ZR_IsClientZombie", Native_IsInfected);
 	CreateNative("ZR_IsClientHuman", Native_IsHuman);
 	CreateNative("ZR_IsNemesis", Native_IsNemesis);
+	CreateNative("ZR_Power", Native_GetPower);
 	
 	gF_ClientInfected = CreateGlobalForward("ZR_OnClientInfected", ET_Ignore, Param_Cell, Param_Cell);
 	gF_ClientHumanPost = CreateGlobalForward("ZR_OnClientHumanPost", ET_Ignore, Param_Cell);
@@ -263,6 +271,8 @@ public void OnMapStart()
 	PrecacheDecal(FOLLOWME, true);
 	PrecacheDecal(FOLLOWMEVTF, true);
 	
+	PrecacheModel(DEFAULT_ARMS);
+	
 	//SOUNDS
 	AddFileToDownloadsTable("sound/ze_premium/ze-defend.mp3");
 	AddFileToDownloadsTable("sound/ze_premium/ze-fire.mp3");
@@ -298,6 +308,7 @@ public void OnMapStart()
 	AddFileToDownloadsTable("sound/ze_premium/ze-infected4.mp3");
 	AddFileToDownloadsTable("sound/ze_premium/ze-infected5.mp3");
 	AddFileToDownloadsTable("sound/ze_premium/ze-infectionnade.mp3");
+	AddFileToDownloadsTable("sound/ze_premium/ze-powereffect.mp3");
 	
 	AddFileToDownloadsTable("sound/ze_premium/10.mp3");
 	AddFileToDownloadsTable("sound/ze_premium/9.mp3");
@@ -403,6 +414,7 @@ public void OnMapStart()
 	PrecacheSound("ze_premium/ze-infected4.mp3");
 	PrecacheSound("ze_premium/ze-infected5.mp3");
 	PrecacheSound("ze_premium/ze-infectionnade.mp3");
+	PrecacheSound("ze_premium/ze-powereffect.mp3");
 	
 	//BEACON
 	g_iBeamSprite = PrecacheModel("materials/sprites/laserbeam.vmt");
@@ -431,6 +443,7 @@ public void Event_RoundStart(Event event, const char[] name, bool bDontBroadcast
 			{	
 				SetEntPropFloat(i, Prop_Data, "m_flLaggedMovementValue", 1.0);
 				SetEntProp(i, Prop_Data, "m_takedamage", 0, 1);
+				DisableAll(i);
 				SetPlayerAsHuman(i);
 				
 				if (g_bSamegun[i] == true)
@@ -513,27 +526,7 @@ public void OnRoundEnd(Handle event, char[] name, bool dontBroadcast)
 			}
 			CheckTeam(i);
 			SetEntProp(i, Prop_Data, "m_takedamage", 0, 1);
-			g_bInfected[i] = false;
-			i_typeofsprite[i] = 0;
-			g_bBeacon[i] = false;
-			g_bIsLeader[i] = false;
-			g_hCooldown[i] = false;
-			spended[i] = 0;
-			i_respawn[i] = 0;
-			if (H_Beacon[i] != null)
-			{
-				KillTimer(H_Beacon[i]);
-				H_Beacon[i] = null;	
-			}
-			if(H_Respawntimer[i] != null)
-			{
-				KillTimer(H_Respawntimer[i]);
-				H_Respawntimer[i] = null;	
-			}
-			g_bFireHE[i] = false;
-			g_bOnFire[i] = false;
-			g_bFreezeFlash[i] = false;
-			g_bNoRespawn[i] = false;
+			DisableAll(i);
 		}
 	}
 }
@@ -599,6 +592,13 @@ public Action CMD_Respawn(int client, int args)
 			CS_RespawnPlayer(client);
 			CPrintToChat(client, " \x04[ZE-Respawn]\x01 %t", "player_respawned");
 		}
+		else if(g_bInfected[client] == false && !IsPlayerAlive(client))
+		{
+			CS_SwitchTeam(client, CS_TEAM_T);
+			SetPlayerAsZombie(client);
+			EmitSoundToAll("ze_premium/ze-respawn.mp3", client);
+			g_bInfected[client] = true;
+		}
 		else
 		{
 			if(g_bInfected[client] == true && i_Infection == 0)
@@ -609,6 +609,7 @@ public Action CMD_Respawn(int client, int args)
 					i_respawn[client]++;
 					int uses = 3 - i_respawn[client];
 					CPrintToChat(client, " \x04[ZE-Respawn]\x01 %t", "zombie_respawned", uses);
+					PrintHintText(client, "\n<font class='fontSize-l'><font color='#00FF00'>You have:</font>%i respawns", uses);
 				}
 			}
 		}
