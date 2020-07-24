@@ -44,6 +44,14 @@ native bool ZR_IsClientHuman(int client);
 native bool ZR_IsNemesis(int client);
 
 /**
+ * Check player ultimate power
+ *
+ * @param client
+ * @return        Type of player ultimate
+ */
+native int ZR_Power(int client);
+
+/**
  * Called after a player is infected by other player
  * 
  * @param client			The client that was infected.
