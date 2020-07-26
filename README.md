@@ -1,6 +1,7 @@
 ![ddisp](https://i.imgur.com/02IiCZ1.png)
 * **AlliedModders version: https://forums.alliedmods.net/showthread.php?t=326056**
 * **You can give me donate: https://www.paypal.me/redsstudio**
+* **Warning: in new version you need entwatch plugin! https://github.com/KoreanDude/csgo-ze-plugins/tree/master/entWatch (you have to use my edited version, that works with ZE Premium)**
 
 ![ddisp](https://i.imgur.com/WWKtEuh.png)
 * **What zombie escape have ?**
