@@ -3,7 +3,7 @@
 #define DEBUG
 
 #define PLUGIN_AUTHOR "Sniper007"
-#define PLUGIN_VERSION "7.5"
+#define PLUGIN_VERSION "8.0"
 
 #include <sourcemod>
 #include <sdktools>
@@ -13,6 +13,7 @@
 #include <smlib>
 #include <sdkhooks>
 #include <zepremium>
+#include <zeknockback>
 #include <emitsoundany>
 
 #include "ze-premium/ze-globals.sp"
@@ -48,6 +49,7 @@ public void OnPluginStart()
 	
 	RegConsoleCmd("sm_respawn", CMD_Respawn);
 	RegConsoleCmd("sm_r", CMD_Respawn);
+	RegConsoleCmd("sm_zrespawn", CMD_Respawn);
 	
 	RegConsoleCmd("sm_rifle", CMD_WeaponsRifle);
 	RegConsoleCmd("sm_heavygun", CMD_WeaponsHeavy);
@@ -151,11 +153,15 @@ public void OnPluginStart()
 	BuildPath(Path_SM, g_sZEConfig2, sizeof(g_sZEConfig2), "configs/ze_premium/humans_classes.cfg");
 	BuildPath(Path_SM, g_sZEConfig3, sizeof(g_sZEConfig3), "configs/ze_premium/weapons.cfg");
 	
+	g_hZombieClass = RegClientCookie("zombie_class_chosen", "", CookieAccess_Private);
+	g_hHumanClass = RegClientCookie("human_class_chosen", "", CookieAccess_Private);
+	
 	CreateTimer(1.0, HUD, _, TIMER_REPEAT);
 	CreateTimer(5.0, PointsCheck, _, TIMER_REPEAT);
 	
 	AddNormalSoundHook(SoundHook);
 	AddCommandListener(Command_PowerH, "+lookatweapon");
+	AddCommandListener(Command_CheckJoin, "jointeam");
 	
 	AutoExecConfig(true, "ze_premium");
 }
@@ -196,6 +202,23 @@ public void SQL_Connection(Database hDatabase, const char[] szError, int iData)
 	}
 }
 
+public void OnClientCookiesCached(int client)
+{
+	char buffer[12];
+	
+	GetClientCookie(client, g_hZombieClass, buffer, sizeof(buffer));
+	if (StrEqual(buffer, ""))
+	{
+		SetClientCookie(client, g_hZombieClass, "0");
+	}
+	
+	GetClientCookie(client, g_hHumanClass, buffer, sizeof(buffer));
+	if (StrEqual(buffer, ""))
+	{
+		SetClientCookie(client, g_hHumanClass, "0");
+	}
+}
+
 // Natives
 public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
 {
@@ -215,6 +238,27 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 	RegPluginLibrary("zepremium");
 	
 	return APLRes_Success;
+}
+
+public Action Command_CheckJoin(int client, const char[] command, int args)
+{
+    char teamString[3];
+    GetCmdArg(1, teamString, sizeof(teamString));
+    
+    int newTeam = StringToInt(teamString);
+    int oldTeam = GetClientTeam(client);
+    
+    if (newTeam == 3 && oldTeam == 2)
+    {
+		PrintToChat(client, " \x04[Zombie Escape]\x01 You can't change your team!");
+		return Plugin_Handled;	
+	}
+	else if (newTeam == 2 && oldTeam == 3)
+    {
+		PrintToChat(client, " \x04[Zombie Escape]\x01 You can't change your team!");
+		return Plugin_Handled;	
+	}
+	return Plugin_Continue;
 }
 
 public void OnMapStart()
@@ -422,17 +466,18 @@ public void OnMapStart()
 	
 	g_bRoundStarted = false;
 	g_bPause = false;
+	g_bRoundEnd = false;
 	g_bWaitingForPlayer = false;
 	i_waitingforplayers = 0;
 }
 
 public void Event_RoundStart(Event event, const char[] name, bool bDontBroadcast)
 {
-	if (H_FirstInfection != null)
+	if (H_FirstInfection != INVALID_HANDLE)
 	{
-		KillTimer(H_FirstInfection);
-		H_FirstInfection = null;
+		delete H_FirstInfection;
 	}
+	g_bRoundEnd = false;
 	i_Infection = g_cZEFirstInfection.IntValue;
 	H_FirstInfection = CreateTimer(1.0, FirstInfection, _, TIMER_REPEAT);
 	for (int i = 1; i <= MaxClients; i++)
@@ -442,9 +487,11 @@ public void Event_RoundStart(Event event, const char[] name, bool bDontBroadcast
 			if (IsPlayerAlive(i))
 			{	
 				SetEntPropFloat(i, Prop_Data, "m_flLaggedMovementValue", 1.0);
+				SetEntProp(i, Prop_Send, "m_CollisionGroup", 2);
 				SetEntProp(i, Prop_Data, "m_takedamage", 0, 1);
 				DisableAll(i);
 				SetPlayerAsHuman(i);
+				openWeapons(i);
 				
 				if (g_bSamegun[i] == true)
 				{
@@ -467,6 +514,7 @@ public void Event_RoundStart(Event event, const char[] name, bool bDontBroadcast
 						GivePlayerItem(i, Secondary_Gun[i]);
 					}
 				}
+				DisableTimers(i);
 			}
 		}
 	}
@@ -476,6 +524,7 @@ public void OnRoundEnd(Handle event, char[] name, bool dontBroadcast)
 {
 	int soucet = GetTeamClientCount(2) + GetTeamClientCount(3);
 	g_bRoundStarted = false;
+	g_bRoundEnd = true;
 	g_bMarker = false;
 	g_bPause = false;
 	i_Riotround = 0;
@@ -487,10 +536,20 @@ public void OnRoundEnd(Handle event, char[] name, bool dontBroadcast)
 	if(winner_team == 2)
 	{
 		ShowOverlayAll(ZMWINSMAT, 4.0);
+		EmitSoundToAll("ze_premium/ze-zombiewin.mp3");
 	}
 	else if(winner_team == 3)
 	{
 		ShowOverlayAll(HUMANWINSMAT, 4.0);
+		int random = GetRandomInt(1, 2);
+		if(random == 1)
+		{
+			EmitSoundToAll("ze_premium/ze-humanwin2.mp3");
+		}
+		else
+		{
+			EmitSoundToAll("ze_premium/ze-humanwin1.mp3");
+		}
 	}
 	
 	for (int i = 1; i <= MaxClients; i++)
@@ -527,6 +586,7 @@ public void OnRoundEnd(Handle event, char[] name, bool dontBroadcast)
 			CheckTeam(i);
 			SetEntProp(i, Prop_Data, "m_takedamage", 0, 1);
 			DisableAll(i);
+			DisableTimers(i);
 		}
 	}
 }
@@ -590,6 +650,7 @@ public Action CMD_Respawn(int client, int args)
 		if (i_Infection > 0 && g_bInfected[client] == false)
 		{
 			CS_RespawnPlayer(client);
+			SetEntProp(client, Prop_Data, "m_takedamage", 0, 1);
 			CPrintToChat(client, " \x04[ZE-Respawn]\x01 %t", "player_respawned");
 		}
 		else if(g_bInfected[client] == false && !IsPlayerAlive(client))
@@ -728,7 +789,7 @@ public Action CMD_GetGun(int client, int args)
 					}
 					GivePlayerItem(client, Primary_Gun[client]);
 				}
-				if (Secondary_Gun[client][0] == 'w')
+				if (Secondary_Gun[client][0] == 'w' && ZR_HaveItem(client) == false)
 				{
 					int secweapon = GetPlayerWeaponSlot(client, CS_SLOT_SECONDARY);
 					if (IsValidEdict(secweapon) && secweapon != -1)
