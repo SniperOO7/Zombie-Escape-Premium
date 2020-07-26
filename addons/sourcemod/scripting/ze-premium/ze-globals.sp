@@ -8,6 +8,10 @@
 #define SMOKE 1
 char g_iaGrenadeOffsets[] = {15, 17, 16, 14, 18, 17};
 
+//COKIES
+Handle g_hHumanClass;
+Handle g_hZombieClass;
+
 //FORWARDS
 Handle gF_ClientInfected;
 Handle gF_ClientRespawned;
@@ -123,10 +127,10 @@ char Human_Power[MAXPLAYERS + 1][100];
 Handle H_Respawntimer[MAXPLAYERS + 1];
 bool g_bUltimate[MAXPLAYERS + 1] = false;
 int i_Power[MAXPLAYERS + 1];
+bool g_bRoundEnd = false;
 
 //GAME
 int i_Infection;
-int i_ToolsVelocity;
 int i_waitingforplayers;
 bool g_bWaitingForPlayer = false;
 bool g_bRoundStarted = false;

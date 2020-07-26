@@ -267,20 +267,20 @@ void DisableAll(int client)
 	g_bOnFire[client] = false;
 	g_bFreezeFlash[client] = false;
 	g_bNoRespawn[client] = false;
-	if (H_Beacon[client] != null)
+}
+
+void DisableTimers(int client)
+{
+	if(g_bBeacon[client] == true)
 	{
-		KillTimer(H_Beacon[client]);
-		H_Beacon[client] = null;	
+		if (H_Beacon[client] != INVALID_HANDLE)
+		{
+			delete H_Beacon[client];
+		}
 	}
-	if(H_Respawntimer[client] != null)
+	if(H_Respawntimer[client] != INVALID_HANDLE)
 	{
-		KillTimer(H_Respawntimer[client]);
-		H_Respawntimer[client] = null;	
-	}
-	if (H_AmmoTimer[client] != null)
-	{
-		KillTimer(H_AmmoTimer[client]);
-		H_AmmoTimer[client] = null;	
+		delete H_Respawntimer[client];
 	}
 }
 
@@ -561,6 +561,7 @@ void SmokeInfection(int client, float origin[3])
 {
 	origin[2] += 10.0;
 	
+	int infectedplayers;
 	float targetOrigin[3];
 	for (new i = 1; i <= MaxClients; i++)
 	{
@@ -577,17 +578,21 @@ void SmokeInfection(int client, float origin[3])
 			
 			if ((TR_DidHit(trace) && TR_GetEntityIndex(trace) == i) || (GetVectorDistance(origin, targetOrigin) <= 100.0))
 			{
-				int randominf = GetRandomInt(1, 5);
-				char soundPath[PLATFORM_MAX_PATH];
-				Format(soundPath, sizeof(soundPath), "ze_premium/ze-infected%i.mp3", randominf);
-				EmitSoundToAll(soundPath, i);
-				if (g_cZEInfectionNadeEffect.IntValue > 0)
+				if(infectedplayers < 3)
 				{
-					SetZombie(i, false);
-				}
-				else
-				{
-					SetZombie(i, true);
+					int randominf = GetRandomInt(1, 5);
+					char soundPath[PLATFORM_MAX_PATH];
+					Format(soundPath, sizeof(soundPath), "ze_premium/ze-infected%i.mp3", randominf);
+					EmitSoundToAll(soundPath, i);
+					infectedplayers++;
+					if (g_cZEInfectionNadeEffect.IntValue > 0)
+					{
+						SetZombie(i, false);
+					}
+					else
+					{
+						SetZombie(i, true);
+					}
 				}
 				CloseHandle(trace);
 			}
@@ -603,17 +608,21 @@ void SmokeInfection(int client, float origin[3])
 				
 				if ((TR_DidHit(trace) && TR_GetEntityIndex(trace) == i) || (GetVectorDistance(origin, targetOrigin) <= 100.0))
 				{
-					int randominf = GetRandomInt(1, 5);
-					char soundPath[PLATFORM_MAX_PATH];
-					Format(soundPath, sizeof(soundPath), "ze_premium/ze-infected%i.mp3", randominf);
-					EmitSoundToAll(soundPath, i);
-					if (g_cZEInfectionNadeEffect.IntValue > 0)
+					if(infectedplayers < 3)
 					{
-						SetZombie(i, false);
-					}
-					else
-					{
-						SetZombie(i, true);
+						int randominf = GetRandomInt(1, 5);
+						char soundPath[PLATFORM_MAX_PATH];
+						Format(soundPath, sizeof(soundPath), "ze_premium/ze-infected%i.mp3", randominf);
+						EmitSoundToAll(soundPath, i);
+						infectedplayers++;
+						if (g_cZEInfectionNadeEffect.IntValue > 0)
+						{
+							SetZombie(i, false);
+						}
+						else
+						{
+							SetZombie(i, true);
+						}
 					}
 				}
 				
@@ -624,6 +633,7 @@ void SmokeInfection(int client, float origin[3])
 	
 	TE_SetupBeamRingPoint(origin, 10.0, g_cZEInfnadedistance.FloatValue, g_iBeamSprite, g_iHaloSprite, 1, 1, 0.2, 100.0, 1.0, SmokeColor, 0, 0);
 	g_bInfectNade[client] = false;
+	CreateTimer(1.0, EndOfRound);
 	TE_SendToAll();
 	LightCreate(SMOKE, origin);
 }
@@ -706,6 +716,11 @@ void DisableSpells(int client)
 	i_Power[client] = 0;
 	f_causeddamage[client] = 0.0;
 	g_bUltimate[client] = false;
+	if(g_bIsLeader[client] == true)
+	{
+		g_bIsLeader[client] = false;
+		CPrintToChatAll(" \x04[ZE-Leader]\x01 %t", "leader_died", client);
+	}
 }
 
 void RemoveGuns(int client)

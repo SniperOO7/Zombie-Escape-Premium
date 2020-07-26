@@ -142,16 +142,7 @@ public Action FirstInfection(Handle timer)
 				g_bFirstInfected[firstinfected] = true;
 				CS_SwitchTeam(firstinfected, CS_TEAM_T);
 				CS_RespawnPlayer(firstinfected);
-				int primweapon = GetPlayerWeaponSlot(firstinfected, CS_SLOT_PRIMARY);
-				if(IsValidEdict(primweapon) && primweapon != -1)
-				{
-					RemoveEdict(primweapon);
-				}
-				int secweapon = GetPlayerWeaponSlot(firstinfected, CS_SLOT_SECONDARY);
-				if(IsValidEdict(secweapon) && secweapon != -1)
-				{
-					RemoveEdict(secweapon);
-				}
+				RemoveGuns(firstinfected);
 				if(g_bIsLeader[firstinfected] == true)
 				{
 					g_bIsLeader[firstinfected] = false;
@@ -204,16 +195,7 @@ public Action FirstInfection(Handle timer)
 				g_bInfected[user] = true;
 				CS_SwitchTeam(user, CS_TEAM_T);
 				CS_RespawnPlayer(user);
-				int primweapon = GetPlayerWeaponSlot(user, CS_SLOT_PRIMARY);
-				if(IsValidEdict(primweapon) && primweapon != -1)
-				{
-					RemoveEdict(primweapon);
-				}
-				int secweapon = GetPlayerWeaponSlot(user, CS_SLOT_SECONDARY);
-				if(IsValidEdict(secweapon) && secweapon != -1)
-				{
-					RemoveEdict(secweapon);
-				}
+				RemoveGuns(user);
 				if(g_bIsLeader[user] == true)
 				{
 					g_bIsLeader[user] = false;
@@ -295,6 +277,20 @@ public Action Respawn(Handle timer, int client)
 	}
 }
 
+public Action EndOfRound(Handle timer)
+{
+	if(GetHumanAliveCount() == 0 && g_bRoundEnd == false)
+	{
+		StopMapMusic();
+		CS_TerminateRound(5.0, CSRoundEnd_TerroristWin, true);
+	}
+	else if(GetZombieAliveCount() == 0 && g_bRoundEnd == false)
+	{
+		StopMapMusic();
+		CS_TerminateRound(5.0, CSRoundEnd_CTWin, true);
+	}
+}
+
 public Action AntiDisconnect(Handle timer, int client)
 {
 	if(IsValidClient(client))
@@ -327,6 +323,7 @@ public Action SwitchTeam(Handle timer, int client)
 				ChangeClientTeam(client, CS_TEAM_CT);
 				CS_RespawnPlayer(client);
 			}
+			SetEntProp(client, Prop_Send, "m_CollisionGroup", 2);
 		}
 	}
 }
@@ -380,6 +377,11 @@ public Action PointsCheck(Handle timer)
 	}
 }
 
+public Action EndFireHe(Handle timer, int client)
+{
+	g_bFireHE[client] = false;
+}
+
 public Action HUD(Handle timer)
 {
 	if(g_cZEHUDInfo.IntValue > 0)
@@ -395,8 +397,28 @@ public Action HUD(Handle timer)
 				}
 				else
 				{
-					SetHudTextParams(-1.0, -0.05, 1.02, 0, 0, 255, 255, 0, 0.0, 0.0, 0.0);
-					ShowHudText(i, -1, "Type: Human | Class: %s | Won rounds: %i", Selected_Class_Human[i], i_hwins[i]);
+					char progress[32];
+					if(g_bUltimate[i] == true)
+					{
+						Format(progress, sizeof(progress), "READY TO USE (F)");
+					}
+					else
+					{
+						if(f_causeddamage[i] >= 2000)Format(progress, sizeof(progress), "☒☒☒☒☐");
+						else if(f_causeddamage[i] >= 1000)Format(progress, sizeof(progress), "☒☒☒☐☐");
+						else if(f_causeddamage[i] >= 500)Format(progress, sizeof(progress), "☒☒☐☐☐");
+						else if(f_causeddamage[i] < 500)Format(progress, sizeof(progress), "☒☐☐☐☐");
+					}
+					if(i_hclass[i] > 0)
+					{
+						SetHudTextParams(-1.0, -0.05, 1.02, 65, 105, 225, 255, 0, 0.0, 0.0, 0.0);
+						ShowHudText(i, -1, "Type: Human | Class: %s | Won rounds: %i\nUltimate Power: %s", Selected_Class_Human[i], i_hwins[i], progress);
+					}
+					else
+					{
+						SetHudTextParams(-1.0, -0.05, 1.02, 65, 105, 225, 255, 0, 0.0, 0.0, 0.0);
+						ShowHudText(i, -1, "Type: Human | Class: %s | Won rounds: %i", Selected_Class_Human[i], i_hwins[i]);
+					}
 				}
 			}
 		}
@@ -461,10 +483,10 @@ public Action EndPower(Handle timer, int client)
 	if (IsValidClient(client))
 	{
 		i_Power[client] = 0;
-		if (H_AmmoTimer[client] != null)
+		PrintHintText(client, "\n<font class='fontSize-l'><font color='#00FF00'>[ZE-Class]</font> <font color='#FF0000'>Your ultimate power has expired!");
+		if (H_AmmoTimer[client] != INVALID_HANDLE)
 		{
-			KillTimer(H_AmmoTimer[client]);
-			H_AmmoTimer[client] = null;	
+			delete H_AmmoTimer[client];
 		}
 	}	
 }

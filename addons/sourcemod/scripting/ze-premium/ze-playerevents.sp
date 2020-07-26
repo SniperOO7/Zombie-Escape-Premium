@@ -9,9 +9,10 @@ public void OnPlayerDeath(Handle event, char[] name, bool dontBroadcast)
 	{
 		if (IsValidClient(client))
 		{	
-			DisableSpells(client);
 			if(g_bInfected[client] == false)
 			{
+				DisableTimers(client);
+				DisableSpells(client);
 				int die = GetRandomInt(1, 3);
 				if(die == 1)
 				{
@@ -22,16 +23,6 @@ public void OnPlayerDeath(Handle event, char[] name, bool dontBroadcast)
 					char soundPath[PLATFORM_MAX_PATH];
 					Format(soundPath, sizeof(soundPath), "ze_premium/ze-ctdie%i.mp3", die);
 					EmitSoundToAll(soundPath, client);
-				}
-				if(g_bIsLeader[client] == true)
-				{
-					g_bIsLeader[client] = false;
-					CPrintToChatAll(" \x04[ZE-Leader]\x01 %t", "leader_died", client);
-				}
-				if (H_Beacon[client] != null)
-				{
-					KillTimer(H_Beacon[client]);
-					H_Beacon[client] = null;	
 				}
 				g_bInfected[client] = true;
 				CS_SwitchTeam(client, CS_TEAM_T);
@@ -47,13 +38,12 @@ public void OnPlayerDeath(Handle event, char[] name, bool dontBroadcast)
 				}
 				if(GetHumanAliveCount() == 0)
 				{
-					StopMapMusic();
-					CS_TerminateRound(5.0, CSRoundEnd_TerroristWin, true);
-					EmitSoundToAll("ze_premium/ze-zombiewin.mp3");
+					CreateTimer(1.0, EndOfRound);
 				}
 			}
 			else if(g_bInfected[client] == true)
 			{
+				DisableSpells(client);
 				if(g_bNotDied[client] == true)
 				{
 					g_bNotDied[client] = false;
@@ -74,20 +64,10 @@ public void OnPlayerDeath(Handle event, char[] name, bool dontBroadcast)
 					}
 					g_bIsNemesis[client] = false;
 					CreateTimer(1.0, Respawn, client);
-					if(GetZombieAliveCount() == 0)
-					{
-						StopMapMusic();
-						CS_TerminateRound(5.0, CSRoundEnd_CTWin, true);
-						int random = GetRandomInt(1, 2);
-						if (random == 1)
-						{
-							EmitSoundToAll("ze_premium/ze-humanwin1.mp3");
-						}
-						else
-						{
-							EmitSoundToAll("ze_premium/ze-humanwin2.mp3");
-						}
-					}
+				}
+				if(GetZombieAliveCount() == 0)
+				{
+					CreateTimer(1.0, EndOfRound);
 				}
 			}
 		}
@@ -117,6 +97,7 @@ public Action Event_Spawn(Event gEventHook, const char[] gEventName, bool iDontB
 			SetPlayerAsZombie(iClient);
 		}
 	}
+	SetEntProp(iClient, Prop_Send, "m_CollisionGroup", 2);
 }
 
 public Action OnTakeDamage(int victim, int &attacker, int &inflictor, float &damage, int &damagetype, int &weapon, float damageForce[3], float damagePosition[3])
@@ -131,69 +112,59 @@ public Action OnTakeDamage(int victim, int &attacker, int &inflictor, float &dam
 	
 	if (GameRules_GetProp("m_bWarmupPeriod") != 1)
 	{
-		if(attacker != victim && i_Infection == 0)
-		{	
-			if(g_bInfected[attacker] == false)
-			{
-				if(g_bUltimate[attacker] == false && i_hclass[attacker] > 0)
+		if(IsValidClient(attacker) && IsValidClient(victim))
+		{
+			if(attacker != victim && i_Infection == 0)
+			{	
+				if(g_bInfected[attacker] == false)
 				{
-					f_causeddamage[attacker] += damage;
+					if(g_bUltimate[attacker] == false && i_hclass[attacker] > 0)
+					{
+						f_causeddamage[attacker] += damage;
+					}
+					
+					if(f_causeddamage[attacker] >= 2000.0)
+					{
+						PrintHintText(attacker, "\n<font class='fontSize-l'><font color='#00FF00'>[ZE-Class]</font> <font color='#FFFFFF'>Your ultimate power is ready!");
+						PrintToChat(attacker, " \x04[ZE-Class]\x01 You have ready your \x0Bultimate power!");
+						f_causeddamage[attacker] = 0.0;
+						g_bUltimate[attacker] = true;
+					}
 				}
 				
-				if(f_causeddamage[attacker] >= 5000.0)
+				if(g_bInfected[attacker] == true && g_bInfected[victim] == false)
 				{
-					PrintHintText(attacker, "\n<font class='fontSize-l'><font color='#00FF00'>[ZE-Class]</font> <font color='#FFFFFF'>You ultimate power is</font> <font color='#FFFF00'>ready!");
-					PrintToChat(attacker, " \x04[ZE-Class]\x01 You have ready your \x0Bultimate power!");
-					f_causeddamage[attacker] = 0.0;
-					g_bUltimate[attacker] = true;
-				}
-			}
-			
-			if(g_bInfected[attacker] == true && g_bInfected[victim] == false)
-			{
-				if(i_protection[victim] > 0)
-				{
-					i_protection[victim]--;
-					EmitSoundToAll("ze_premium/ze-hit.mp3", victim);
-					return Plugin_Handled;
-				}
-				else
-				{
-					RemoveGuns(victim);
-					DisableSpells(victim);
-					if(g_bIsLeader[victim] == true)
+					if(i_protection[victim] > 0)
 					{
-						g_bIsLeader[victim] = false;
-						CPrintToChatAll(" \x04[ZE-Leader]\x01 %t", "leader_died", victim);
+						i_protection[victim]--;
+						EmitSoundToAll("ze_premium/ze-hit.mp3", victim);
+						return Plugin_Handled;
 					}
-					if (H_Beacon[victim] != null)
+					else
 					{
-						KillTimer(H_Beacon[victim]);
-						H_Beacon[victim] = null;	
-					}
-					CS_SwitchTeam(victim, CS_TEAM_T);
-					SetPlayerAsZombie(victim);
-					EmitSoundToAll("ze_premium/ze-respawn.mp3", victim);
-					g_bInfected[victim] = true;
-					i_infected[attacker]++;
-					CPrintToChat(victim, " \x04[Zombie-Escape]\x01 %t", "infected_by_player", attacker);
-					SetEntProp(attacker, Prop_Data, "m_iFrags", GetClientFrags(attacker) + 1);
-					CPrintToChat(attacker, " \x04[Zombie-Escape]\x01 %t", "infected_frag", victim);
-					if(i_Riotround > 0 && g_cZEZombieShieldType.IntValue > 0)
-					{
-						GivePlayerItem(victim, "weapon_shield");
-					}
-					
-					Call_StartForward(gF_ClientInfected);
-					Call_PushCell(victim);
-					Call_PushCell(attacker);
-					Call_Finish();
-					
-					if(GetHumanAliveCount() == 0)
-					{
-						StopMapMusic();
-						CS_TerminateRound(5.0, CSRoundEnd_TerroristWin, true);
-						EmitSoundToAll("ze_premium/ze-zombiewin.mp3");
+						RemoveGuns(victim);
+						DisableTimers(victim);
+						DisableSpells(victim);
+						CS_SwitchTeam(victim, CS_TEAM_T);
+						SetPlayerAsZombie(victim);
+						EmitSoundToAll("ze_premium/ze-respawn.mp3", victim);
+						g_bInfected[victim] = true;
+						i_infected[attacker]++;
+						CPrintToChat(victim, " \x04[Zombie-Escape]\x01 %t", "infected_by_player", attacker);
+						SetEntProp(attacker, Prop_Data, "m_iFrags", GetClientFrags(attacker) + 1);
+						CPrintToChat(attacker, " \x04[Zombie-Escape]\x01 %t", "infected_frag", victim);
+						if(i_Riotround > 0 && g_cZEZombieShieldType.IntValue > 0)
+						{
+							GivePlayerItem(victim, "weapon_shield");
+						}
+						Call_StartForward(gF_ClientInfected);
+						Call_PushCell(victim);
+						Call_PushCell(attacker);
+						Call_Finish();
+						if(GetHumanAliveCount() == 0)
+						{
+							CreateTimer(1.0, EndOfRound);
+						}
 					}
 				}
 			}
@@ -211,12 +182,12 @@ public Action OnTakeDamage(int victim, int &attacker, int &inflictor, float &dam
 			else if(ZR_IsClientZombie(victim))
 			{
 				g_bOnFire[victim] = true;
-				g_bFireHE[attacker] = false;
 				EmitSoundToAll("ze_premium/ze-fire.mp3", victim);
 				CreateTimer(3.0, Onfire, victim);
 				CreateTimer(5.0, Slowdown, victim);
 				IgniteEntity(victim, 5.0);
 				SetEntPropFloat(victim, Prop_Data, "m_flLaggedMovementValue", 0.5);
+				CreateTimer(1.0, EndFireHe, attacker);
 			}
 		}
 	}

@@ -518,10 +518,10 @@ public int mZeLeaderHandler(Menu menu, MenuAction action, int client, int index)
 					if(g_bBeacon[client] == true)
 					{
 						g_bBeacon[client] = false;
-						if (H_Beacon[client] != null)
+						if (H_Beacon[client] != INVALID_HANDLE)
 						{
-							KillTimer(H_Beacon[client]);
-							H_Beacon[client] = null;	
+							delete H_Beacon[client];
+							g_bBeacon[client] = false;
 							CPrintToChat(client, " \x04[ZE-Leader]\x01 %t", "beacon_off");
 							openLeader(client);
 						}
@@ -802,6 +802,14 @@ public int mLeaderChooseHandler(Menu menu, MenuAction action, int client, int in
 								{
 									g_bIsLeader[i] = false;
 									CPrintToChat(i, " \x04[ZE-Leader]\x01 %t", "removed_from_leader");
+									if(g_bBeacon[i] == true)
+									{
+										if (H_Beacon[i] != null && H_Beacon[i] != INVALID_HANDLE)
+										{
+											delete H_Beacon[i];
+											g_bBeacon[i] = false;
+										}
+									}
 								}
 							}
 						}

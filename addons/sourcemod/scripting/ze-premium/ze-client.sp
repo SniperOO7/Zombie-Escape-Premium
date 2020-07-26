@@ -25,6 +25,7 @@ public void OnClientDisconnect(int client)
 	g_bFreezeFlash[client] = false;
 	g_bAntiDisconnect[client] = false;
 	g_bInfectNade[client] = false;
+	PrintToChatAll(" \x04[Zombie Escape] \x01Player\x06 %N\x01 has disconnected from the server!", client);
 }
 
 public void OnClientPutInServer(int client)
@@ -41,11 +42,12 @@ public void OnClientPutInServer(int client)
 	g_bNoRespawn[client] = false;
 	g_bAntiDisconnect[client] = false;
 	g_bInfectNade[client] = false;
-	i_zclass[client] = 0;
 	i_respawn[client] = 0;
-	i_hclass[client] = 0;
+	i_Power[client] = 0;
+	g_bUltimate[client] = false;
 	SDKHook(client, SDKHook_OnTakeDamageAlive, OnTakeDamage);
 	SDKHook(client, SDKHook_WeaponCanUse, OnWeaponCanUse);
+	PrintToChatAll(" \x04[Zombie Escape] \x01Player\x06 %N\x01 has join to the server!", client);
 }
 
 public void OnClientPostAdminCheck(int client)
@@ -59,4 +61,11 @@ public void OnClientPostAdminCheck(int client)
 	{
 		CreateTimer(1.0, SwitchTeam, client);
 	}
+	
+	char szClass[32];
+	GetClientCookie(client, g_hZombieClass, szClass, sizeof(szClass));
+	i_zclass[client] = StringToInt(szClass);
+	
+	GetClientCookie(client, g_hHumanClass, szClass, sizeof(szClass));
+	i_hclass[client] = StringToInt(szClass);
 }

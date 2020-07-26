@@ -143,6 +143,9 @@ public int MenuHandler_ZombieClass(Menu menu, MenuAction action, int client, int
 			if(StrEqual(flags, ""))
 			{
 				i_zclass[client] = SelectedZMClass;
+				char szClass[16];
+				Format(szClass, sizeof(szClass), "%i", i_zclass[client]);
+				SetClientCookie(client, g_hZombieClass, szClass);
 				CPrintToChat(client, " \x04[ZE-Class]\x01 %t", "chosen_class", s_SelectedClass);
 			} 
 			else
@@ -150,6 +153,9 @@ public int MenuHandler_ZombieClass(Menu menu, MenuAction action, int client, int
 				if(HasPlayerFlags(client, flags))
 				{
 					i_zclass[client] = SelectedZMClass;
+					char szClass[16];
+					Format(szClass, sizeof(szClass), "%i", i_zclass[client]);
+					SetClientCookie(client, g_hZombieClass, szClass);
 					CPrintToChat(client, " \x04[ZE-Class]\x01 %t", "chosen_class", s_SelectedClass);					
 				} 
 				else
@@ -213,6 +219,9 @@ public int MenuHandler_HumanClass(Menu menu, MenuAction action, int client, int 
 			if(StrEqual(flags, ""))
 			{
 				i_hclass[client] = SelectedHumanClass;
+				char szClass[16];
+				Format(szClass, sizeof(szClass), "%i", i_hclass[client]);
+				SetClientCookie(client, g_hHumanClass, szClass);
 				CPrintToChat(client, " \x04[ZE-Class]\x01 %t", "chosen_class", s_SelectedClass);
 			} 
 			else
@@ -220,6 +229,9 @@ public int MenuHandler_HumanClass(Menu menu, MenuAction action, int client, int 
 				if(HasPlayerFlags(client, flags))
 				{
 					i_hclass[client] = SelectedHumanClass;
+					char szClass[16];
+					Format(szClass, sizeof(szClass), "%i", i_hclass[client]);
+					SetClientCookie(client, g_hHumanClass, szClass);
 					CPrintToChat(client, " \x04[ZE-Class]\x01 %t", "chosen_class", s_SelectedClass);					
 				} 
 				else
